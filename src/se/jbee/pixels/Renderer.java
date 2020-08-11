@@ -13,23 +13,13 @@ public class Renderer {
     private static final int TARGET_FPS = 60;
     private static final long TARGET_FRAME_DURATION = 1000 / TARGET_FPS;
 
-    private static MaterialMatrix pixels;
+    private static GameMatrix pixels;
 
     private static Frame frame;
     private static Canvas canvas;
 
     private static int canvasWidth, canvasHeight;
     private static int gameWidth = 0, gameHeight = 0;
-
-    static final Material wall = new Material("wall", 127, null, Color.RED);
-    static final Material empty = new Material("empty", 0, null, null);
-    static final Material sand1 = new Material("sand1", 1, Simulation.SAND, new Color(213, 151, 75));
-    static final Material sand2 = new Material("sand2", 2, Simulation.SAND, new Color(221, 180, 128));
-    static final Material sand3 = new Material("sand3", 3, Simulation.SAND, new Color(255, 237, 206));
-    static final Material sand4 = new Material("sand4", 4, Simulation.SAND, new Color(197, 175, 125));
-    static final Material water = new Material("water", 5, Simulation.WATER, new Color(30, 144, 255));
-
-    static final Material[] sands = { sand1, sand2, sand3, sand4 };
 
     public static void init() {
         getBestSize();
@@ -60,16 +50,16 @@ public class Renderer {
         });
         frame.setVisible(true);
 
+        pixels = new GameMatrix(gameWidth, gameHeight, WorldMaterials.TEST, WorldMaterials.wall);
+
         startRendering();
-
-
-        pixels = new MaterialMatrix(gameWidth, gameHeight, empty, wall);
-
         startSimulation();
     }
 
     private static void startSimulation() {
-        putWalls();
+
+
+         putWalls();
         Thread sim = new Thread() {
             @Override
             public void run() {
@@ -89,8 +79,8 @@ public class Renderer {
                         }
                     }
                     if (run % 2 == 0) {
-                        pixels.set(pixels.width/2, 0, sands[rnd.nextInt(sands.length-1)]);
-                        pixels.set(pixels.width/2-2, 0, water);
+                        pixels.set(pixels.width/2, 0, WorldMaterials.sand.variant(rnd));
+                        pixels.set(pixels.width/2-2, 0, WorldMaterials.water);
                     }
                     run++;
                     try {
@@ -112,6 +102,7 @@ public class Renderer {
     }
 
     private static void putWalls() {
+        Material wall = WorldMaterials.wall;
         for (int x = 0; x < pixels.width; x++)
             pixels.set(x, -10, wall); // draw bottom
 
@@ -125,6 +116,9 @@ public class Renderer {
             pixels.set(pixels.width/2 - 10, y, wall);
             pixels.set(pixels.width/2 + 10, y, wall);
         }
+
+        for (int i = 0; i < 20; i++)
+            pixels.set(pixels.width/2 - 30, pixels.height-10-i, wall);
     }
 
     private static void startRendering() {
@@ -134,10 +128,9 @@ public class Renderer {
                 GraphicsConfiguration gc = canvas.getGraphicsConfiguration();
                 BufferedImage main = gc.createCompatibleImage(gameWidth, gameHeight);
                 long lastFpsTime = System.currentTimeMillis();
-                long totalFrames = 0;
-                long currentFps = 0;
+                int totalFrames = 0;
+                int currentFps = 0;
                 boolean draw = true;
-
                 while (draw) {
                     totalFrames ++;
                     long now = System.currentTimeMillis();
@@ -153,9 +146,9 @@ public class Renderer {
 
                     for (int y = 0; y < pixels.height; y++) {
                         for (int x = 0; x < pixels.width; x++) {
-                            Material material = pixels.get(x, y);
+                            MaterialVariant material = pixels.getVariant(x, y);
                             if (material.isPainted()) {
-                                main.setRGB(x, y, material.color.getRGB());
+                                main.setRGB(x, y, material.getRGB(totalFrames));
                             }
                         }
                     }
