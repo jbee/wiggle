@@ -27,6 +27,7 @@ public class Renderer {
     static final Material sand2 = new Material("sand2", 2, Simulation.SAND, new Color(221, 180, 128));
     static final Material sand3 = new Material("sand3", 3, Simulation.SAND, new Color(255, 237, 206));
     static final Material sand4 = new Material("sand4", 4, Simulation.SAND, new Color(197, 175, 125));
+    static final Material water = new Material("water", 5, Simulation.WATER, new Color(30, 144, 255));
 
     static final Material[] sands = { sand1, sand2, sand3, sand4 };
 
@@ -89,10 +90,11 @@ public class Renderer {
                     }
                     if (run % 2 == 0) {
                         pixels.set(pixels.width/2, 0, sands[rnd.nextInt(sands.length-1)]);
+                        pixels.set(pixels.width/2-2, 0, water);
                     }
                     run++;
                     try {
-                        Thread.sleep(30);
+                        Thread.sleep(10);
                     } catch (InterruptedException e) {
                         simulate = false;
                     }
