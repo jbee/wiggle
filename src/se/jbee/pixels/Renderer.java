@@ -50,7 +50,7 @@ public class Renderer {
         });
         frame.setVisible(true);
 
-        pixels = new GameMatrix(gameWidth, gameHeight, WorldMaterials.TEST, WorldMaterials.wall);
+        pixels = new GameMatrix(gameWidth, gameHeight, WorldMaterials.TEST, WorldMaterials.rock);
 
         startRendering();
         startSimulation();
@@ -64,25 +64,28 @@ public class Renderer {
             @Override
             public void run() {
                 boolean simulate = true;
-                int run = 0;
+                int frame = 0;
                 Rnd rnd = new Rnd();
                 while (simulate) {
                     for (int y = pixels.height - 1; y >= 0; y--) {
                         if (y % 2 == 0) { // left to right
                             for (int x = 0; x < pixels.width; x++) {
-                                pixels.simulate(x,y, run);
+                                pixels.simulate(x,y, frame);
                             }
                         } else { // right to left
                             for (int x = pixels.width-1; x >= 0; x--) {
-                                pixels.simulate(x,y, run);
+                                pixels.simulate(x,y, frame);
                             }
                         }
                     }
-                    if (run % 2 == 0) {
+                    if (frame % 2 == 0) {
                         pixels.set(pixels.width/2, 0, WorldMaterials.sand.variant(rnd));
-                        pixels.set(pixels.width/2-2, 0, WorldMaterials.water);
+                        pixels.set(pixels.width/2-2, 0, WorldMaterials.water.variant(rnd));
                     }
-                    run++;
+                    if (frame % 4 == 0) {
+                        pixels.set(pixels.width/2-4, 0, WorldMaterials.oil.variant(rnd));
+                    }
+                    frame++;
                     try {
                         Thread.sleep(10);
                     } catch (InterruptedException e) {
@@ -102,7 +105,7 @@ public class Renderer {
     }
 
     private static void putWalls() {
-        Material wall = WorldMaterials.wall;
+        Material wall = WorldMaterials.rock;
         for (int x = 0; x < pixels.width; x++)
             pixels.set(x, -10, wall); // draw bottom
 

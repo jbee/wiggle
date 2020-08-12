@@ -11,7 +11,14 @@ public final class Material {
     public final Simulation simulation;
     public final int density;
     private final MaterialVariant[] variants;
-    //TODO variants: same material but different look
+
+    // flammable
+    // combustible
+
+    // TODO "life-time" or change of behaviour after certain time can be done as part of the simulation based on chance.
+    //  This means no state has to be kept to track if it is time for the change. it just happens on time on average.
+    // for example a fire that burns out
+
     //TODO the simulation effect might be slower (like diffuse body in water vs. dense body in water) then every turn
     //     also some fluids might mix very slow due to similar density
 
@@ -29,9 +36,13 @@ public final class Material {
         materials.add(this);
     }
 
-    public Material addVariant(String name, Color color) {
+    public Material addVariant(String name, Color... colors) {
+        return addVariant(name, 1, colors);
+    }
+
+    public Material addVariant(String name, int annimationSpeed, Color... colors) {
         MaterialVariant[] variants = Arrays.copyOf(this.variants, this.variants.length + 1);
-        variants[this.variants.length] = new MaterialVariant(this, this.variants.length, name, color);
+        variants[this.variants.length] = new MaterialVariant(this, this.variants.length, name, annimationSpeed, colors);
         return new Material(materials, id, this.name, simulation, density, variants);
     }
 
@@ -48,6 +59,7 @@ public final class Material {
     }
 
     public MaterialVariant variant(Rnd rnd) {
-        return variant(rnd.nextInt(0, variants.length-1));
+        //TODO also consider occurances of variants
+        return variants.length == 1 ? variants[0] : variant(rnd.nextInt(0, variants.length-1));
     }
 }

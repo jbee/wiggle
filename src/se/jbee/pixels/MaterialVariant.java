@@ -7,22 +7,27 @@ public final class MaterialVariant {
     public final Material material;
     public final byte variantId;
     public final String name;
-    private final Color color;
-    //TODO animation: different color dependent on the frame #
+    private final Color[] colors;
+    private final int animationSpeed;
 
-    public MaterialVariant(Material material, int variantId, String name, Color color) {
+    // TODO occurrence, how big is the chance for a variant to occur naturally
+
+    public MaterialVariant(Material material, int variantId, String name, int animationSpeed, Color... colors) {
         this.material = material;
         this.variantId = (byte) variantId;
         this.name = name;
-        this.color = color;
+        this.animationSpeed = animationSpeed;
+        this.colors = colors;
     }
 
     public boolean isPainted() {
-        return color != null;
+        return colors.length > 0;
     }
 
+    //TODO textures can be done with colour array, modulo and if this method also has x,y
+
     public int getRGB(int frame) {
-        return color.getRGB();
+        return colors[(frame / animationSpeed) % colors.length].getRGB();
     }
 
     public int toGameCell() {

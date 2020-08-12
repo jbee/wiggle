@@ -6,7 +6,8 @@ public final class GameMatrix {
     public final int height;
 
     private final int[] matrix;
-    // TODO moment for each pixel
+    // TODO moment for each pixel: left, right, up, down, disturbed
+
     // TODO coating material for each pixel
     private final WorldMaterials materials;
     private final Material border;
@@ -47,20 +48,34 @@ public final class GameMatrix {
         return materials.byId(cell & 0xFF).variant(byteOfInt(cell, 1));
     }
 
+    public Momenta getMomenta(int x, int y) {
+        return new Momenta((matrix[y * width + x] >> 16) & 0xFF);
+    }
+
     public void swapMove(int x, int y, int dx, int dy) {
+        swapMove(x,y,dx,dy, Momenta.NONE);
+    }
+
+    public void swapMove(int x, int y, int dx, int dy, Momenta change) {
         int x2 = x+dx;
         int y2 = y+dy;
         int i = y * width + x;
         int i2 = y2 * width + x2;
         int tmp = matrix[i2];
-        matrix[i2] = matrix[i];
-        matrix[i] = tmp;
+        int moved = matrix[i];
+        if (change.hasMomentum()) {
+            moved &= 0xffff;
+            moved |= change.toGameCell();
+        }
+        this.matrix[i2] = moved;
+        this.matrix[i] = tmp;
     }
 
-    public void simulate(int x, int y, int run) {
+    public void simulate(int x, int y, int frame) {
         Material material = get(x, y);
         if (material.isSimulated()) {
-            material.simulation.simulate(x, y, this, run);
+            material.simulation.simulate(x, y, this, frame);
         }
     }
+
 }
