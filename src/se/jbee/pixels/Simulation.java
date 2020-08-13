@@ -52,9 +52,9 @@ public interface Simulation {
      * 2. A pixel which moves against the processing direction can cause a pattern of x-x-x-x-x-x-x instead of xxxxxx----
      */
     Simulation FLUID = (x, y, matrix, dx) -> {
-        if (y >= matrix.height - 1) {
+        if (y >= matrix.height - 1)
             return 0;
-        }
+
         Material fluid = matrix.get(x,y);
 
         // check straight down
@@ -66,11 +66,21 @@ public interface Simulation {
                 return matrix.swapMove(x, y, dx, dy);
             return matrix.swapMove(x, y, 0, dy);
         }
+
         Momenta momenta = matrix.getMomenta(x, y);
         boolean canGoLeft = x > 0 && fluid.displaces(matrix.get(x - 1, y));
         boolean canGoRight = x < matrix.width - 1 && fluid.displaces(matrix.get(x + 1, y));
         if (!canGoLeft && !canGoRight)
             return 0;
+        if (!canGoLeft && momenta.has(Momentum.LEFT)) {
+            matrix.addMomenta(x, y, NONE);
+            return 0;
+        }
+        if (!canGoRight && momenta.has(Momentum.RIGHT)) {
+            matrix.addMomenta(x, y, NONE);
+            return 0;
+        }
+
         if (true) {
             boolean canGoLeft2 = canGoLeft && x > 1 && fluid.displaces(matrix.get(x-2, y));
             if (momenta.has(Momentum.LEFT) && canGoLeft) {
@@ -81,12 +91,12 @@ public interface Simulation {
                 return matrix.swapMove(x, y, canGoRight2 ? +2 : +1, 0);
             }
         }
-        if (dx > 0) { // this makes sure we prefer to move with the direction in which the dx is processed horizontally to get a maximal spreading effect
+        if (true && dx > 0) { // this makes sure we prefer to move with the direction in which the dx is processed horizontally to get a maximal spreading effect
             if (canGoRight)
                 return matrix.addMomenta(x,y, JUST_RIGHT).swapMove(x, y, +1, 0);
             if (canGoLeft)
                 return matrix.addMomenta(x,y, JUST_LEFT).swapMove(x, y, -1, 0);
-        } else {
+        } else if (true) {
             if (canGoLeft)
                 return matrix.addMomenta(x,y, JUST_LEFT).swapMove(x, y, -1, 0);
             if (canGoRight)

@@ -5,6 +5,6 @@ public enum MaterialGroup {
     FLUID,
     SOLID_GRANULAR,
     SOLID_CRYSTALLINE,
-    SPONGY,
+    SPONGY, //GOOY
     GASSY,
 }

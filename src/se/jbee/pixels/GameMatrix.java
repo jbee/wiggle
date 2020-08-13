@@ -72,7 +72,7 @@ public final class GameMatrix {
 
     public void simulate(int frame) {
         for (int y = height - 1; y >= 0; y--) {
-            if (frame % 2 == 0) {
+            if (frame % 2 == 1) {
                 for (int x = 0; x < width; x++) {
                     simulate(x, y, +1);
                 }

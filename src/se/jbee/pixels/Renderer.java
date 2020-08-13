@@ -21,6 +21,8 @@ public class Renderer {
     private static int canvasWidth, canvasHeight;
     private static int gameWidth = 0, gameHeight = 0;
 
+    private static volatile int simCounter;
+
     public static void init() {
         getBestSize();
 
@@ -67,6 +69,7 @@ public class Renderer {
                 int frame = 0;
                 while (simulate) {
                     pixels.simulate(frame);
+                    simCounter++;
                     // some sources...
                     if (true || frame < 1000) {
                         if (frame % 2 == 0) {
@@ -117,7 +120,7 @@ public class Renderer {
             for (int x = 20; x <80; x++)
                 pixels.insert(x, y, WorldMaterials.water.variant(rnd));
 
-            if (false)
+            if (true)
         for (int i = 0; i < 30; i++) {
             pixels.insert(20 + i, 80 + i, WorldMaterials.rock);
             pixels.insert(20 + i, 81 + i, WorldMaterials.rock);
@@ -131,16 +134,19 @@ public class Renderer {
                 GraphicsConfiguration gc = canvas.getGraphicsConfiguration();
                 BufferedImage main = gc.createCompatibleImage(gameWidth, gameHeight);
                 long lastFpsTime = System.currentTimeMillis();
-                int totalFrames = 0;
-                int currentFps = 0;
+                int frameCounter = 0;
+                int currentFPS = 0;
+                int currentSPS = 0;
                 boolean draw = true;
                 while (draw) {
-                    totalFrames ++;
+                    frameCounter ++;
                     long now = System.currentTimeMillis();
                     if (now > lastFpsTime + 1000) {
                         lastFpsTime += 1000;
-                        currentFps = totalFrames;
-                        totalFrames = 0;
+                        currentFPS = frameCounter;
+                        currentSPS = simCounter;
+                        frameCounter = 0;
+                        simCounter = 0;
                     }
 
                     Graphics g2d = main.getGraphics();
@@ -151,7 +157,7 @@ public class Renderer {
                         for (int x = 0; x < pixels.width; x++) {
                             MaterialVariant material = pixels.getVariant(x, y);
                             if (material.isPainted()) {
-                                main.setRGB(x, y, material.getRGB(totalFrames));
+                                main.setRGB(x, y, material.getRGB(frameCounter));
                             }
                         }
                     }
@@ -162,8 +168,8 @@ public class Renderer {
 
                     g2d.drawImage(main, 0,0, canvasWidth, canvasHeight, null);
                     g2d.setColor(Color.RED);
-                    g2d.drawString(""+ currentFps, 10, 11);
-
+                    g2d.drawString("FPS: "+ currentFPS, 10, 11);
+                    g2d.drawString("SPS:"+ currentSPS +" ("+(currentSPS == 0 ? 0 : 1000/currentSPS)+"ms avg)", 10, 21);
 
                     g2d.dispose();
 

@@ -8,6 +8,7 @@ public final class Momenta implements Iterable<Momentum> {
     public static final Momenta NONE = new Momenta(0);
     public static final Momenta JUST_LEFT = new Momenta(Momentum.LEFT);
     public static final Momenta JUST_RIGHT = new Momenta(Momentum.RIGHT);
+    public static final Momenta JUST_DOWN = new Momenta(Momentum.DOWN);
 
     private final int momenta;
 
