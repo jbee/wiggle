@@ -51,6 +51,32 @@ public interface Simulation {
      * 1. A pixel is moved from one side to the opposite side in a single run as it is moving in direction of the processing.
      * 2. A pixel which moves against the processing direction can cause a pattern of x-x-x-x-x-x-x instead of xxxxxx----
      */
+    Simulation FLUID2 = (x, y, matrix, dx) -> {
+        if (y >= matrix.height - 1)
+            return 0;
+
+        Material fluid = matrix.get(x,y);
+
+        // check straight down
+        if (fluid.displaces(matrix.get(x, y + 1))) {
+            return matrix.swapMove(x,y, 0, 1);
+        }
+
+        Momenta momenta = matrix.getMomenta(x, y);
+        boolean canGoLeft = x > 0 && fluid.displaces(matrix.get(x - 1, y));
+        boolean canGoRight = x < matrix.width - 1 && fluid.displaces(matrix.get(x + 1, y));
+        boolean leftToRightProcessing = dx > 0;
+        boolean shouldGoLeft = momenta.has(Momentum.LEFT) || !momenta.hasMomentum();
+        boolean shouldGoRight = momenta.has(Momentum.RIGHT) || !momenta.hasMomentum();
+
+        // only move to left now
+        if (leftToRightProcessing && canGoLeft && shouldGoLeft)
+            return matrix.swapMove(x,y, -1, 0);
+        if (!leftToRightProcessing && canGoRight && shouldGoRight)
+            return matrix.swapMove(x,y, +1, 0);
+        return 0;
+    };
+
     Simulation FLUID = (x, y, matrix, dx) -> {
         if (y >= matrix.height - 1)
             return 0;
@@ -105,7 +131,6 @@ public interface Simulation {
         //IDEA: use momentum to move left or right and stay there, never move against momentum, remove momentum when left and right neighours are either same fluid or not displaceable
         return 0;
     };
-
     // if we can go left or right and there is same fluid (or any?) above we move
     // do we have a momentum? => continue with chance
     //KEY: if a fluid moves horizontal it does give momentum to the neighbours its gets moved to if they are also of the fluid, otherwise, it looses momentum after 1 move

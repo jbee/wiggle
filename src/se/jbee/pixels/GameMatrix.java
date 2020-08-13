@@ -6,11 +6,11 @@ public final class GameMatrix {
     public final int height;
 
     private final int[] matrix;
-    // TODO moment for each pixel: left, right, up, down, disturbed
 
     // TODO coating material for each pixel
     private final WorldMaterials materials;
     private final Material border;
+    private boolean nextLeftToRight = false;
 
     GameMatrix(int width, int height, WorldMaterials materials, Material border) {
         this.width = width;
@@ -65,14 +65,22 @@ public final class GameMatrix {
         int i = y * width + x;
         int i2 = y2 * width + x2;
         int tmp = matrix[i2];
-        this.matrix[i2] = matrix[i];
+        int moved = matrix[i];
+        if (dy != 0) // clears
+            moved &= 0xff00ffff;
+        if (dx != 0) {
+            moved &= 0xff00ffff;
+            moved |= dx < 0 ? Momenta.JUST_LEFT.toGameCell() : Momenta.JUST_RIGHT.toGameCell();
+        }
+        this.matrix[i2] = moved;
         this.matrix[i] = tmp;
         return dy == 0 ? dx : 0;
     }
 
-    public void simulate(int frame) {
+    public void simulate() {
+        boolean leftToRight = nextLeftToRight;
         for (int y = height - 1; y >= 0; y--) {
-            if (frame % 2 == 1) {
+            if (leftToRight) {
                 for (int x = 0; x < width; x++) {
                     simulate(x, y, +1);
                 }
@@ -81,13 +89,15 @@ public final class GameMatrix {
                     simulate(x, y, -1);
                 }
             }
+            leftToRight = !leftToRight;
         }
+        nextLeftToRight = !nextLeftToRight;
     }
 
-    private int simulate(int x, int y, int frame) {
+    private int simulate(int x, int y, int dx) {
         Material material = get(x, y);
         if (material.isSimulated()) {
-            return material.simulation.simulate(x, y, this, frame);
+            return material.simulation.simulate(x, y, this, dx);
         }
         return 0;
     }

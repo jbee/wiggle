@@ -68,10 +68,10 @@ public class Renderer {
                 boolean simulate = true;
                 int frame = 0;
                 while (simulate) {
-                    pixels.simulate(frame);
+                    pixels.simulate();
                     simCounter++;
                     // some sources...
-                    if (true || frame < 1000) {
+                    if (false || frame < 1000) {
                         if (frame % 2 == 0) {
                             pixels.insert(pixels.width / 2, 0, WorldMaterials.sand.variant(rnd));
                             pixels.insert(pixels.width / 2 - 2, 0, WorldMaterials.water.variant(rnd));
@@ -116,14 +116,17 @@ public class Renderer {
         for (int i = 0; i < 20; i++)
             pixels.insert(pixels.width/2 - 30, pixels.height-10-i, wall);
 
-        for (int y = 20; y < 50; y++)
-            for (int x = 20; x <80; x++)
-                pixels.insert(x, y, WorldMaterials.water.variant(rnd));
+        for (int i = 0; i < 100; i++)
+            pixels.insert(20, pixels.height-1-i, wall);
+
+        for (int y = 20; y < 80; y++)
+            for (int x = 60; x < 100; x++)
+                pixels.insert(x, y, WorldMaterials.sand.variant(rnd));
 
             if (true)
         for (int i = 0; i < 30; i++) {
-            pixels.insert(20 + i, 80 + i, WorldMaterials.rock);
-            pixels.insert(20 + i, 81 + i, WorldMaterials.rock);
+            pixels.insert(40 + i, 80 + i, WorldMaterials.rock);
+            pixels.insert(40 + i, 81 + i, WorldMaterials.rock);
         }
     }
 
@@ -157,7 +160,16 @@ public class Renderer {
                         for (int x = 0; x < pixels.width; x++) {
                             MaterialVariant material = pixels.getVariant(x, y);
                             if (material.isPainted()) {
-                                main.setRGB(x, y, material.getRGB(frameCounter));
+                                int rgb = material.getRGB(frameCounter);
+                                if (false && material.material.id == WorldMaterials.water.id && pixels.getMomenta(x,y).hasMomentum()) {
+                                    Momenta m = pixels.getMomenta(x,y);
+                                    rgb = Color.BLUE.getRGB();
+                                    if (m.has(Momentum.LEFT))
+                                        rgb = Color.CYAN.getRGB();
+                                    if (m.has(Momentum.RIGHT))
+                                        rgb = Color.MAGENTA.getRGB();
+                                }
+                                main.setRGB(x, y, rgb);
                             }
                         }
                     }

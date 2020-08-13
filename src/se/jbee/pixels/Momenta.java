@@ -2,6 +2,7 @@ package se.jbee.pixels;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 
 public final class Momenta implements Iterable<Momentum> {
 
@@ -36,11 +37,19 @@ public final class Momenta implements Iterable<Momentum> {
     }
 
     private boolean has(int index) {
-        return (momenta & (1 << index)) == 1;
+        return (momenta & (1 << index)) > 0;
     }
 
     public int toGameCell() {
         return momenta << 16;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        for (Momentum m : this)
+            str.append(m.name()).append(',');
+        return str.toString();
     }
 
     @Override
@@ -66,7 +75,7 @@ public final class Momenta implements Iterable<Momentum> {
             while (index < MOMENTA.length) {
                 if (has(index)) {
                     left--;
-                    return MOMENTA[index];
+                    return MOMENTA[index++];
                 }
                 index++;
             }
