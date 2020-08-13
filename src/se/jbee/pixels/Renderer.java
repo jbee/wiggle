@@ -58,32 +58,27 @@ public class Renderer {
 
     private static void startSimulation() {
 
-
-         putWalls();
+        Rnd rnd = new Rnd();
+         putWalls(rnd);
         Thread sim = new Thread() {
             @Override
             public void run() {
                 boolean simulate = true;
                 int frame = 0;
-                Rnd rnd = new Rnd();
                 while (simulate) {
-                    for (int y = pixels.height - 1; y >= 0; y--) {
-                        if (y % 2 == 0) { // left to right
-                            for (int x = 0; x < pixels.width; x++) {
-                                pixels.simulate(x,y, frame);
-                            }
-                        } else { // right to left
-                            for (int x = pixels.width-1; x >= 0; x--) {
-                                pixels.simulate(x,y, frame);
-                            }
+                    pixels.simulate(frame);
+                    // some sources...
+                    if (true || frame < 1000) {
+                        if (frame % 2 == 0) {
+                            pixels.insert(pixels.width / 2, 0, WorldMaterials.sand.variant(rnd));
+                            pixels.insert(pixels.width / 2 - 2, 0, WorldMaterials.water.variant(rnd));
                         }
-                    }
-                    if (frame % 2 == 0) {
-                        pixels.set(pixels.width/2, 0, WorldMaterials.sand.variant(rnd));
-                        pixels.set(pixels.width/2-2, 0, WorldMaterials.water.variant(rnd));
-                    }
-                    if (frame % 4 == 0) {
-                        pixels.set(pixels.width/2-4, 0, WorldMaterials.oil.variant(rnd));
+                        if (frame % 4 == 0) {
+                            pixels.insert(pixels.width / 2 + 30, 0, WorldMaterials.oil.variant(rnd));
+                        }
+                        if (frame % 2 == 0) {
+                            pixels.insert(pixels.width / 2 - 50, 0, WorldMaterials.slime.variant(rnd));
+                        }
                     }
                     frame++;
                     try {
@@ -91,11 +86,6 @@ public class Renderer {
                     } catch (InterruptedException e) {
                         simulate = false;
                     }
-                    /*
-
-
-                     */
-
                 }
             }
         };
@@ -104,24 +94,34 @@ public class Renderer {
         sim.start();
     }
 
-    private static void putWalls() {
+    private static void putWalls(Rnd rnd) {
         Material wall = WorldMaterials.rock;
         for (int x = 0; x < pixels.width; x++)
-            pixels.set(x, -10, wall); // draw bottom
+            pixels.insert(x, -10, wall); // draw bottom
 
         for (int x = pixels.width/2-5; x < pixels.width/2+5; x++)
-            pixels.set(x, pixels.height /2, wall); // draw bottom
+            pixels.insert(x, pixels.height /2, wall); // draw bottom
 
         for (int i = 0; i < 5; i++)
-            pixels.set(pixels.width/2 + 3 +i, pixels.height - 50 , wall);
+            pixels.insert(pixels.width/2 + 3 +i, pixels.height - 50 , wall);
 
         for (int y = pixels.height-10; y > pixels.height-20; y--) {
-            pixels.set(pixels.width/2 - 10, y, wall);
-            pixels.set(pixels.width/2 + 10, y, wall);
+            pixels.insert(pixels.width/2 - 10, y, wall);
+            pixels.insert(pixels.width/2 + 10, y, wall);
         }
 
         for (int i = 0; i < 20; i++)
-            pixels.set(pixels.width/2 - 30, pixels.height-10-i, wall);
+            pixels.insert(pixels.width/2 - 30, pixels.height-10-i, wall);
+
+        for (int y = 20; y < 50; y++)
+            for (int x = 20; x <80; x++)
+                pixels.insert(x, y, WorldMaterials.water.variant(rnd));
+
+            if (false)
+        for (int i = 0; i < 30; i++) {
+            pixels.insert(20 + i, 80 + i, WorldMaterials.rock);
+            pixels.insert(20 + i, 81 + i, WorldMaterials.rock);
+        }
     }
 
     private static void startRendering() {

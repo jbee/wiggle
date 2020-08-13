@@ -5,7 +5,9 @@ import java.util.NoSuchElementException;
 
 public final class Momenta implements Iterable<Momentum> {
 
-    public static Momenta NONE = new Momenta(0);
+    public static final Momenta NONE = new Momenta(0);
+    public static final Momenta JUST_LEFT = new Momenta(Momentum.LEFT);
+    public static final Momenta JUST_RIGHT = new Momenta(Momentum.RIGHT);
 
     private final int momenta;
 

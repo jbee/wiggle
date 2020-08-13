@@ -50,7 +50,7 @@ public final class Material {
         return simulation != null;
     }
 
-    public boolean swapsWith(Material other) {
+    public boolean displaces(Material other) {
         return density > other.density;
     }
 

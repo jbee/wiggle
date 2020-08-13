@@ -24,10 +24,10 @@ public final class GameMatrix {
         return (byte) ((value >> (n * 8)) & 0xFF);
     }
 
-    public void set(int x, int y, Material material) {
-        set(x,y, material.variant(0));
+    public void insert(int x, int y, Material material) {
+        insert(x,y, material.variant(0));
     }
-    public void set(int x, int y, MaterialVariant material) {
+    public void insert(int x, int y, MaterialVariant material) {
         if (y < 0)
             y = height + y;
         if (x < 0)
@@ -52,30 +52,44 @@ public final class GameMatrix {
         return new Momenta((matrix[y * width + x] >> 16) & 0xFF);
     }
 
-    public void swapMove(int x, int y, int dx, int dy) {
-        swapMove(x,y,dx,dy, Momenta.NONE);
+    public GameMatrix addMomenta(int x, int y, Momenta change) {
+        int i = y * width + x;
+        matrix[i] &= 0xff00ffff;
+        matrix[i] |= change.toGameCell();
+        return this;
     }
 
-    public void swapMove(int x, int y, int dx, int dy, Momenta change) {
+    public int swapMove(int x, int y, int dx, int dy) {
         int x2 = x+dx;
         int y2 = y+dy;
         int i = y * width + x;
         int i2 = y2 * width + x2;
         int tmp = matrix[i2];
-        int moved = matrix[i];
-        if (change.hasMomentum()) {
-            moved &= 0xffff;
-            moved |= change.toGameCell();
-        }
-        this.matrix[i2] = moved;
+        this.matrix[i2] = matrix[i];
         this.matrix[i] = tmp;
+        return dy == 0 ? dx : 0;
     }
 
-    public void simulate(int x, int y, int frame) {
+    public void simulate(int frame) {
+        for (int y = height - 1; y >= 0; y--) {
+            if (frame % 2 == 0) {
+                for (int x = 0; x < width; x++) {
+                    simulate(x, y, +1);
+                }
+            } else {
+                for (int x = width-1; x >= 0; x--) {
+                    simulate(x, y, -1);
+                }
+            }
+        }
+    }
+
+    private int simulate(int x, int y, int frame) {
         Material material = get(x, y);
         if (material.isSimulated()) {
-            material.simulation.simulate(x, y, this, frame);
+            return material.simulation.simulate(x, y, this, frame);
         }
+        return 0;
     }
 
 }

@@ -6,5 +6,5 @@ public enum Momentum {
     RIGHT,
     UP,
     DOWN,
-    SPIN
+    SPIN,
 }
