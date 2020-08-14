@@ -70,9 +70,9 @@ public interface Simulation {
         boolean canGoLeft = x > 0 && fluid.displaces(matrix.get(x - 1, y));
         boolean canGoRight = x < matrix.width - 1 && fluid.displaces(matrix.get(x + 1, y));
         if (canGoLeft && canGoRight) {
-            if (fluid.displaces(matrix.get(x+dx,y+1)))
+            if (fluid.displaces(matrix.get(x-dx,y+1)))
                 return matrix.swapMove(x,y,dx,1);
-            return 0; //matrix.swapMove(x, y, dx, 0);
+            return 0;
         }
 
         if (!canGoLeft && !canGoRight) {

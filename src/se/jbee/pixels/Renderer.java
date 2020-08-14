@@ -1,15 +1,12 @@
 package se.jbee.pixels;
 
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 public class Renderer {
 
-    private static final int GAME_WIDTH = 384, GAME_HEIGHT = 196;
+    private static final int GAME_WIDTH = 640, GAME_HEIGHT = 360;
     private static final int TARGET_FPS = 60;
     private static final long TARGET_FRAME_DURATION = 1000 / TARGET_FPS;
 
@@ -20,11 +17,14 @@ public class Renderer {
 
     private static int canvasWidth, canvasHeight;
     private static int gameWidth = 0, gameHeight = 0;
+    private static int factor = 1;
 
     private static volatile int simCounter;
 
     private static boolean showMomenta = false;
     private static boolean addParticles = false;
+
+    static int toolMaterialId = WorldMaterials.water.id;
 
     public static void init() {
         getBestSize();
@@ -32,7 +32,10 @@ public class Renderer {
         frame = new Frame();
         canvas = new Canvas();
 
+        canvas.setFocusable(false);
         canvas.setPreferredSize(new Dimension(canvasWidth, canvasHeight));
+
+        createAndSetCursor();
 
         frame.add(canvas);
 
@@ -60,6 +63,23 @@ public class Renderer {
                 }
             }
         });
+        canvas.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    int x = e.getX() / factor;
+                    int y = e.getY() / factor;
+                    int size = 20;
+                    for (int yi = 0; yi < size; yi++)
+                        for (int xi = 0; xi < size; xi++)
+                            pixels.insert(x + xi, y + yi, WorldMaterials.TEST.byId(toolMaterialId).variant(pixels.rnd));
+                } else if (e.getButton() == MouseEvent.BUTTON3) {
+                    toolMaterialId = (toolMaterialId +1) % WorldMaterials.TEST.count();
+                    createAndSetCursor();
+                }
+            }
+        });
         frame.setVisible(true);
 
         pixels = new GameMatrix(gameWidth, gameHeight, WorldMaterials.TEST, WorldMaterials.rock);
@@ -68,9 +88,28 @@ public class Renderer {
         startSimulation();
     }
 
+    private static void createAndSetCursor() {
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        int size = 20 * factor;
+        BufferedImage cursor = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        MaterialVariant variant = WorldMaterials.TEST.byId(toolMaterialId).variant(0);
+        int rgb = variant.isPainted() ? variant.getRGB(0) : Color.WHITE.getRGB();
+        for (int y = 0; y < size; y++)
+            cursor.setRGB(0,y, rgb);
+        for (int y = 0; y < size; y++)
+            cursor.setRGB(size-1,y, rgb);
+        for (int x = 0; x < size; x++)
+            cursor.setRGB(x, 0, rgb);
+        for (int x = 0; x < size; x++)
+            cursor.setRGB(x, size-1, rgb);
+
+        Cursor c = toolkit.createCustomCursor(cursor , new Point(0,0), "img");
+        canvas.setCursor(c);
+    }
+
     private static void startSimulation() {
 
-        Rnd rnd = new Rnd();
+        Rnd rnd = pixels.rnd;
          putWalls(rnd);
         Thread sim = new Thread() {
             @Override
@@ -145,7 +184,8 @@ public class Renderer {
             @Override
             public void run() {
                 GraphicsConfiguration gc = canvas.getGraphicsConfiguration();
-                BufferedImage main = gc.createCompatibleImage(gameWidth, gameHeight);
+                BufferedImage main = gc.createCompatibleImage(gameWidth, gameHeight, Transparency.TRANSLUCENT);
+                System.out.println(main.getColorModel().hasAlpha() ? "YES" : "NO");
                 long lastFpsTime = System.currentTimeMillis();
                 int frameCounter = 0;
                 int currentFPS = 0;
@@ -179,7 +219,12 @@ public class Renderer {
                                     if (m.has(Momentum.RIGHT))
                                         rgb = Color.MAGENTA.getRGB();
                                 }
-                                main.setRGB(x, y, rgb);
+
+                                if (false && !(material.material().simulation == Simulation.FLUID && pixels.getMomenta(x,y).hasMomentum())) {
+                                    main.setRGB(x, y, new Color(rgb |= (200 & 0xff), true).getRGB());
+                                } else {
+                                    main.setRGB(x, y, rgb);
+                                }
                             }
                         }
                     }
@@ -190,8 +235,9 @@ public class Renderer {
 
                     g2d.drawImage(main, 0,0, canvasWidth, canvasHeight, null);
                     g2d.setColor(Color.RED);
-                    g2d.drawString("FPS: "+ currentFPS, 10, 11);
-                    g2d.drawString("SPS:"+ currentSPS +" ("+(currentSPS == 0 ? 0 : 1000/currentSPS)+"ms avg)", 10, 21);
+                    g2d.drawString("FPS: "+ currentFPS, 10, 10);
+                    g2d.drawString("SPS:"+ currentSPS +" ("+(currentSPS == 0 ? 0 : 1000/currentSPS)+"ms avg)", 10, 26);
+                    g2d.drawString("Tool: "+WorldMaterials.TEST.byId(toolMaterialId).name, 10, 42);
 
                     g2d.dispose();
 
@@ -238,7 +284,7 @@ public class Renderer {
 
         int xDiff = screenSize.width - canvasWidth;
         int yDiff = screenSize.height - canvasHeight;
-        int factor = canvasWidth / GAME_WIDTH;
+        factor = canvasWidth / GAME_WIDTH;
 
         System.out.println("factor: "+factor);
 

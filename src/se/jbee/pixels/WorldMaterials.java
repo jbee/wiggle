@@ -13,10 +13,11 @@ public final class WorldMaterials {
         .addVariant("dense", new Color(243, 3, 13));
 
     static final Material water = new Material(TEST,"Water", Simulation.FLUID, 5)
-        .addVariant("sweet", 10, new Color(28, 110, 127));
+        .addVariant("sweet", 10, new Color(9, 125, 156, 174))
+        .addVariant("sweet", 10, new Color(9, 125, 156, 221));
 
     static final Material oil = new Material(TEST,"Oil", Simulation.FLUID, 4)
-            .addVariant("sweet", new Color(194, 76, 36));
+            .addVariant("sticky", new Color(194, 76, 36));
 
     static final Material slime = new Material(TEST,"Soylent Green", Simulation.FLUID, 6)
             .addVariant("itchy", new Color(178, 226, 3))
@@ -45,5 +46,9 @@ public final class WorldMaterials {
 
     public Material byId(int id) {
         return materialsById[id];
+    }
+
+    public int count() {
+        return nextId;
     }
 }

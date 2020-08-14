@@ -5,6 +5,8 @@ public final class GameMatrix {
     public final int width;
     public final int height;
 
+    public final Rnd rnd = new Rnd();
+
     private final int[] matrix;
 
     // TODO coating material for each pixel
