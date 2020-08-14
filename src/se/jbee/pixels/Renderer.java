@@ -82,7 +82,7 @@ public class Renderer {
         });
         frame.setVisible(true);
 
-        pixels = new GameMatrix(gameWidth, gameHeight, WorldMaterials.TEST, WorldMaterials.rock);
+        pixels = new GameMatrix(gameWidth, gameHeight, WorldMaterials.TEST, WorldMaterials.eterium);
 
         startRendering();
         startSimulation();
@@ -147,7 +147,7 @@ public class Renderer {
     }
 
     private static void putWalls(Rnd rnd) {
-        Material wall = WorldMaterials.rock;
+        Material wall = WorldMaterials.eterium;
         for (int x = 0; x < pixels.width; x++)
             pixels.insert(x, -10, wall); // draw bottom
 
@@ -174,8 +174,8 @@ public class Renderer {
 
             if (true)
         for (int i = 0; i < 30; i++) {
-            pixels.insert(40 + i, 80 + i, WorldMaterials.rock);
-            pixels.insert(40 + i, 81 + i, WorldMaterials.rock);
+            pixels.insert(40 + i, 80 + i, WorldMaterials.eterium);
+            pixels.insert(40 + i, 81 + i, WorldMaterials.eterium);
         }
     }
 
