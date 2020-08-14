@@ -1,5 +1,8 @@
 package se.jbee.pixels;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
+
 public interface Simulation {
 
     /**
@@ -11,7 +14,11 @@ public interface Simulation {
      * @param dx the direction in which the simulation processes pixels horizontally
      * @return true if the pixel moved, else false
      */
-    boolean simulate(int x, int y, GameMatrix matrix, int dx);
+    boolean simulate(int x, int y, GameSimulation matrix, int dx);
+
+    default Simulation with(Simulation effect) {
+        return (x, y, matrix, dx) -> this.simulate(x,y,matrix,dx) | effect.simulate(x,y,matrix,dx);
+    }
 
     /**
      * Go DOWN
@@ -25,6 +32,35 @@ public interface Simulation {
         return false;
     };
 
+    static Simulation morphs(Predicate<Material> when) {
+        return (x,y,matrix,dx) -> {
+            Material to = matrix.get(x, y);
+            if (matrix.loopCount() % 4 != 0)
+                return false;
+            if (dx != 1 && x < matrix.width - 1) {
+                Material target = matrix.get(x+1, y);
+                if (when.test(target))
+                    matrix.insert(x + 1, y, to);
+            }
+            if (x > 0 && dx != -1) {
+                Material target = matrix.get(x-1, y);
+                if (when.test(target))
+                    matrix.insert(x - 1, y, to);
+            }
+            if (y > 0) {
+                Material target = matrix.get(x, y - 1);
+                if (when.test(target))
+                    matrix.insert(x ,y-1, to);
+            }
+            if (y < matrix.height-1) {
+                Material target = matrix.get(x, y + 1);
+                if (when.test(target))
+                    matrix.insert(x, y+1, to);
+            }
+            return false;
+        };
+
+    }
 
     /**
      * Go DOWN, DOWN LEFT or DOWN RIGHT

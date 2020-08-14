@@ -1,6 +1,6 @@
 package se.jbee.pixels;
 
-public final class GameMatrix {
+public final class GameSimulation {
 
     public final int width;
     public final int height;
@@ -14,7 +14,9 @@ public final class GameMatrix {
     private final Material border;
     private boolean nextLeftToRight = false;
 
-    GameMatrix(int width, int height, WorldMaterials materials, Material border) {
+    private int loopCount;
+
+    GameSimulation(int width, int height, WorldMaterials materials, Material border) {
         this.width = width;
         this.height = height;
         this.materials = materials;
@@ -54,7 +56,7 @@ public final class GameMatrix {
         return new Momenta((matrix[y * width + x] >> 16) & 0xFF);
     }
 
-    public GameMatrix clearMomentum(int x, int y) {
+    public GameSimulation clearMomentum(int x, int y) {
         int i = y * width + x;
         matrix[i] &= 0xff00ffff;
         return this;
@@ -82,7 +84,12 @@ public final class GameMatrix {
         return true;
     }
 
+    public int loopCount() {
+        return loopCount;
+    }
+
     public void simulate() {
+        loopCount++;
         boolean leftToRight = nextLeftToRight;
         for (int y = height - 1; y >= 0; y--) {
             if (leftToRight) {
@@ -94,7 +101,6 @@ public final class GameMatrix {
                     simulate(x, y, -1);
                 }
             }
-            //leftToRight = !leftToRight;
         }
         nextLeftToRight = !nextLeftToRight;
     }

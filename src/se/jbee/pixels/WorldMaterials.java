@@ -13,8 +13,10 @@ public final class WorldMaterials {
         .addVariant("dense", new Color(243, 3, 13));
 
     static final Material water = new Material(TEST,"Water", Simulation.FLUID, 100)
-        .addVariant("sweet", 10, new Color(9, 125, 156, 174))
-        .addVariant("sweet", 10, new Color(9, 125, 156, 221));
+        .addVariant("sweet", new Color(9, 125, 156, 174));
+
+    static final Material Poison = new Material(TEST, "Poison", Simulation.FLUID.with(Simulation.morphs(other -> other == water)), 70)
+            .addVariant("week", 20, new Color(54, 180, 26), new Color(57, 194, 27));
 
     static final Material oil = new Material(TEST,"Oil", Simulation.FLUID, 40)
             .addVariant("sticky", new Color(194, 76, 36));

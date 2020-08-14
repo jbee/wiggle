@@ -10,7 +10,7 @@ public class Renderer {
     private static final int TARGET_FPS = 60;
     private static final long TARGET_FRAME_DURATION = 1000 / TARGET_FPS;
 
-    private static GameMatrix pixels;
+    private static GameSimulation pixels;
 
     private static Frame frame;
     private static Canvas canvas;
@@ -82,7 +82,7 @@ public class Renderer {
         });
         frame.setVisible(true);
 
-        pixels = new GameMatrix(gameWidth, gameHeight, WorldMaterials.TEST, WorldMaterials.eterium);
+        pixels = new GameSimulation(gameWidth, gameHeight, WorldMaterials.TEST, WorldMaterials.eterium);
 
         startRendering();
         startSimulation();
