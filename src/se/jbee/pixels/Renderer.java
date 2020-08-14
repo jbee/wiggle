@@ -23,6 +23,9 @@ public class Renderer {
 
     private static volatile int simCounter;
 
+    private static boolean showMomenta = false;
+    private static boolean addParticles = false;
+
     public static void init() {
         getBestSize();
 
@@ -46,8 +49,15 @@ public class Renderer {
         });
         frame.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyTyped(KeyEvent e) {
-                Game.quit();
+            public void keyPressed(KeyEvent e) {
+                char c = e.getKeyChar();
+                if (c == 'm') {
+                    showMomenta = !showMomenta;
+                } else if (c == 'p') {
+                    addParticles = !addParticles;
+                } else if (c == 'q') {
+                    Game.quit();
+                }
             }
         });
         frame.setVisible(true);
@@ -71,7 +81,7 @@ public class Renderer {
                     pixels.simulate();
                     simCounter++;
                     // some sources...
-                    if (false || frame < 1000) {
+                    if (addParticles) {
                         if (frame % 2 == 0) {
                             pixels.insert(pixels.width / 2, 0, WorldMaterials.sand.variant(rnd));
                             pixels.insert(pixels.width / 2 - 2, 0, WorldMaterials.water.variant(rnd));
@@ -119,9 +129,9 @@ public class Renderer {
         for (int i = 0; i < 100; i++)
             pixels.insert(20, pixels.height-1-i, wall);
 
-        for (int y = 20; y < 80; y++)
-            for (int x = 60; x < 100; x++)
-                pixels.insert(x, y, WorldMaterials.sand.variant(rnd));
+        for (int y = 10; y < 80; y++)
+            for (int x = 50; x < 100; x++)
+                pixels.insert(x, y, WorldMaterials.water.variant(rnd));
 
             if (true)
         for (int i = 0; i < 30; i++) {
@@ -161,7 +171,7 @@ public class Renderer {
                             MaterialVariant material = pixels.getVariant(x, y);
                             if (material.isPainted()) {
                                 int rgb = material.getRGB(frameCounter);
-                                if (false && material.material.id == WorldMaterials.water.id && pixels.getMomenta(x,y).hasMomentum()) {
+                                if (showMomenta && material.material().simulation == Simulation.FLUID && pixels.getMomenta(x,y).hasMomentum()) {
                                     Momenta m = pixels.getMomenta(x,y);
                                     rgb = Color.BLUE.getRGB();
                                     if (m.has(Momentum.LEFT))

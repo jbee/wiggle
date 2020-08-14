@@ -1,10 +1,12 @@
 package se.jbee.pixels;
 
 import java.awt.*;
+import java.util.function.Supplier;
 
 public final class MaterialVariant {
 
-    public final Material material;
+    private final Supplier<Material> material;
+    public final byte materialId;
     public final byte variantId;
     public final String name;
     private final Color[] colors;
@@ -12,12 +14,17 @@ public final class MaterialVariant {
 
     // TODO occurrence, how big is the chance for a variant to occur naturally
 
-    public MaterialVariant(Material material, int variantId, String name, int animationSpeed, Color... colors) {
+    public MaterialVariant(Supplier<Material> material, int variantId, String name, int animationSpeed, Color... colors) {
         this.material = material;
+        this.materialId = material.get().id;
         this.variantId = (byte) variantId;
         this.name = name;
         this.animationSpeed = animationSpeed;
         this.colors = colors;
+    }
+
+    public Material material() {
+        return material.get();
     }
 
     public boolean isPainted() {
@@ -31,6 +38,6 @@ public final class MaterialVariant {
     }
 
     public int toGameCell() {
-        return (variantId << 8) + material.id;
+        return (variantId << 8) + materialId;
     }
 }

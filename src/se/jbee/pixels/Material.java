@@ -42,7 +42,7 @@ public final class Material {
 
     public Material addVariant(String name, int annimationSpeed, Color... colors) {
         MaterialVariant[] variants = Arrays.copyOf(this.variants, this.variants.length + 1);
-        variants[this.variants.length] = new MaterialVariant(this, this.variants.length, name, annimationSpeed, colors);
+        variants[this.variants.length] = new MaterialVariant(() -> materials.byId(id), this.variants.length, name, annimationSpeed, colors);
         return new Material(materials, id, this.name, simulation, density, variants);
     }
 

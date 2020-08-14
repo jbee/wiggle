@@ -52,10 +52,9 @@ public final class GameMatrix {
         return new Momenta((matrix[y * width + x] >> 16) & 0xFF);
     }
 
-    public GameMatrix addMomenta(int x, int y, Momenta change) {
+    public GameMatrix clearMomentum(int x, int y) {
         int i = y * width + x;
         matrix[i] &= 0xff00ffff;
-        matrix[i] |= change.toGameCell();
         return this;
     }
 
@@ -68,7 +67,7 @@ public final class GameMatrix {
         int moved = matrix[i];
         if (dy != 0) // clears
             moved &= 0xff00ffff;
-        if (dx != 0) {
+        if (dx != 0 && dy == 0) {
             moved &= 0xff00ffff;
             moved |= dx < 0 ? Momenta.JUST_LEFT.toGameCell() : Momenta.JUST_RIGHT.toGameCell();
         }
@@ -89,7 +88,7 @@ public final class GameMatrix {
                     simulate(x, y, -1);
                 }
             }
-            leftToRight = !leftToRight;
+            //leftToRight = !leftToRight;
         }
         nextLeftToRight = !nextLeftToRight;
     }
