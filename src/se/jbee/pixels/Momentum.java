@@ -6,5 +6,11 @@ public enum Momentum {
     RIGHT,
     UP,
     DOWN,
-    SPIN,
+    SPIN;
+
+    public final int mask;
+
+    Momentum() {
+        this.mask = 1 << ordinal() + 16;
+    }
 }

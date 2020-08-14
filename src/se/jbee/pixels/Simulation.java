@@ -9,20 +9,20 @@ public interface Simulation {
      * @param y the y coordinate of the pixel to simulate
      * @param matrix the game matrix with the pixel data
      * @param dx the direction in which the simulation processes pixels horizontally
-     * @return the moment on x axis of the pixel should y stay the same (most likely obsolete)
+     * @return true if the pixel moved, else false
      */
-    int simulate(int x, int y, GameMatrix matrix, int dx);
+    boolean simulate(int x, int y, GameMatrix matrix, int dx);
 
     /**
      * Go DOWN
      */
     Simulation SOLID = (x, y, matrix, dx) -> {
         if (y >= matrix.height - 1)
-            return 0;
+            return false;
         Material solid = matrix.get(x,y);
         if (solid.displaces(matrix.get(x, y +1)))
             return matrix.swapMove(x, y, 0, 1);
-        return 0;
+        return false;
     };
 
 
@@ -32,7 +32,7 @@ public interface Simulation {
     Simulation SOLID_GRANULAR = (x, y, matrix, dx) -> {
         // need to fall?
         if (y >= matrix.height - 1)
-            return 0;
+            return false;
         Material solid = matrix.get(x,y);
         if (solid.displaces(matrix.get(x, y +1))) { // fall
             // some random fast falling
@@ -48,7 +48,7 @@ public interface Simulation {
             return matrix.swapMove(x, y, -1, +1);
         if (canGoRight)
             return matrix.swapMove(x, y, 1, 1);
-        return 0;
+        return false;
     };
 
     /**
@@ -56,7 +56,7 @@ public interface Simulation {
      */
     Simulation FLUID = (x, y, matrix, dx) -> {
         if (y >= matrix.height - 1)
-            return 0;
+            return false;
 
         Material fluid = matrix.get(x,y);
 
@@ -72,30 +72,30 @@ public interface Simulation {
         boolean canGoRight = x < matrix.width - 1 && fluid.displaces(matrix.get(x + 1, y));
         if (!canGoLeft && !canGoRight) {
             matrix.clearMomentum(x,y);
-            return 0;
+            return false;
         }
         Momenta momenta = matrix.getMomenta(x, y);
         if (canGoLeft && canGoRight) {
             if (fluid.displaces(matrix.get(x-dx,y+1)))
                 return matrix.swapMove(x,y,-dx,1);
             if (momenta.isNone() || (!momenta.isLeft() && !momenta.isRight()))
-                return 0;
+                return false;
             // we have a left or right momentum
             if (x >= 2 && fluid == matrix.get(x-2, y) || x < matrix.width - 2 && fluid == matrix.get(x+2, y))
                 matrix.clearMomentum(x, y);
-            return 0;
+            return false;
         }
         if (!canGoLeft && momenta.isLeft()) {
             // right down?
             if (fluid.displaces(matrix.get(x+1,y+1)))
                 return matrix.swapMove(x,y,1,1);
-            return 0;
+            return false;
         }
         if (!canGoRight && momenta.isRight()) {
             // left down?
             if (fluid.displaces(matrix.get(x - 1, y + 1)))
                 return matrix.swapMove(x, y, -1, 1);
-            return 0;
+            return false;
         }
         boolean canGoLeft2 = canGoLeft && x > 1 && fluid.displaces(matrix.get(x-2, y));
         if (momenta.isLeft() && canGoLeft)
@@ -111,7 +111,7 @@ public interface Simulation {
      */
     Simulation GOO = (x, y, matrix, dx) -> {
         if (y >= matrix.height - 1)
-            return 0;
+            return false;
 
         Material fluid = matrix.get(x,y);
 
@@ -127,14 +127,14 @@ public interface Simulation {
         boolean canGoRight = x < matrix.width - 1 && fluid.displaces(matrix.get(x + 1, y));
         if (!canGoLeft && !canGoRight) {
             matrix.clearMomentum(x,y);
-            return 0;
+            return false;
         }
         Momenta momenta = matrix.getMomenta(x, y);
         if (canGoLeft && canGoRight) {
             if (fluid.displaces(matrix.get(x-dx,y+1)))
                 return matrix.swapMove(x,y,-dx,1);
             if (momenta.isNone() || (!momenta.isLeft() && !momenta.isRight()))
-                return 0;
+                return false;
             // we have a left or right momentum
             if (x >= 2 && fluid == matrix.get(x-2, y) || x < matrix.width - 2 && fluid == matrix.get(x+2, y)) {
                 matrix.clearMomentum(x, y);
@@ -145,19 +145,19 @@ public interface Simulation {
                 if (momenta.isLeft())
                     return matrix.swapMove(x,y, +1, 0);
             }
-            return 0;
+            return false;
         }
         if (!canGoLeft && momenta.isLeft()) {
             // right down?
             if (fluid.displaces(matrix.get(x+1,y+1)))
                 return matrix.swapMove(x,y,1,1);
-            return 0;
+            return false;
         }
         if (!canGoRight && momenta.isRight()) {
             // left down?
             if (fluid.displaces(matrix.get(x - 1, y + 1)))
                 return matrix.swapMove(x, y, -1, 1);
-            return 0;
+            return false;
         }
         boolean canGoLeft2 = canGoLeft && x > 1 && fluid.displaces(matrix.get(x-2, y));
         if (momenta.isLeft() && canGoLeft)

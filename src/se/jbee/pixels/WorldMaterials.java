@@ -45,7 +45,6 @@ public final class WorldMaterials {
 
     public void add(Material m) {
         materialsById[m.id] = m;
-        System.out.println("added "+m.name +" as "+m.id);
     }
 
     public Material byId(int id) {

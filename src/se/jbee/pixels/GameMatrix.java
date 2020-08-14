@@ -60,22 +60,26 @@ public final class GameMatrix {
         return this;
     }
 
-    public int swapMove(int x, int y, int dx, int dy) {
+    public boolean swapMove(int x, int y, int dx, int dy) {
+        if (dx == 0 && dy == 0)
+            return false;
         int x2 = x+dx;
         int y2 = y+dy;
         int i = y * width + x;
         int i2 = y2 * width + x2;
         int tmp = matrix[i2];
         int moved = matrix[i];
-        if (dy != 0) // clears
+        if (dy != 0) { // clears
             moved &= 0xff00ffff;
+            moved |= dy < 0 ? Momentum.UP.mask : Momentum.DOWN.mask;
+        }
         if (dx != 0 && dy == 0) {
             moved &= 0xff00ffff;
-            moved |= dx < 0 ? Momenta.JUST_LEFT.toGameCell() : Momenta.JUST_RIGHT.toGameCell();
+            moved |= dx < 0 ? Momentum.LEFT.mask : Momentum.RIGHT.mask;
         }
         this.matrix[i2] = moved;
         this.matrix[i] = tmp;
-        return dy == 0 ? dx : 0;
+        return true;
     }
 
     public void simulate() {
@@ -95,12 +99,12 @@ public final class GameMatrix {
         nextLeftToRight = !nextLeftToRight;
     }
 
-    private int simulate(int x, int y, int dx) {
+    private boolean simulate(int x, int y, int dx) {
         Material material = get(x, y);
         if (material.isSimulated()) {
             return material.simulation.simulate(x, y, this, dx);
         }
-        return 0;
+        return false;
     }
 
 }

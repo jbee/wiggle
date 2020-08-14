@@ -185,7 +185,6 @@ public class Renderer {
             public void run() {
                 GraphicsConfiguration gc = canvas.getGraphicsConfiguration();
                 BufferedImage main = gc.createCompatibleImage(gameWidth, gameHeight, Transparency.TRANSLUCENT);
-                System.out.println(main.getColorModel().hasAlpha() ? "YES" : "NO");
                 long lastFpsTime = System.currentTimeMillis();
                 int frameCounter = 0;
                 int currentFPS = 0;
@@ -211,20 +210,16 @@ public class Renderer {
                             MaterialVariant material = pixels.getVariant(x, y);
                             if (material.isPainted()) {
                                 int rgb = material.getRGB(frameCounter);
-                                if (showMomenta && material.material().simulation == Simulation.FLUID && !pixels.getMomenta(x,y).isNone()) {
+                                if (showMomenta) {
                                     Momenta m = pixels.getMomenta(x,y);
-                                    rgb = Color.BLUE.getRGB();
-                                    if (m.is(Momentum.LEFT))
+                                    if (m.isLeft())
                                         rgb = Color.CYAN.getRGB();
-                                    if (m.is(Momentum.RIGHT))
+                                    if (m.isRight())
                                         rgb = Color.MAGENTA.getRGB();
+                                    if (m.is(Momentum.DOWN))
+                                        rgb = Color.YELLOW.getRGB();
                                 }
-
-                                if (false && !(material.material().simulation == Simulation.FLUID && !pixels.getMomenta(x,y).isNone())) {
-                                    main.setRGB(x, y, new Color(rgb |= (200 & 0xff), true).getRGB());
-                                } else {
-                                    main.setRGB(x, y, rgb);
-                                }
+                                main.setRGB(x, y, rgb);
                             }
                         }
                     }
