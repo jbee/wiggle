@@ -211,16 +211,16 @@ public class Renderer {
                             MaterialVariant material = pixels.getVariant(x, y);
                             if (material.isPainted()) {
                                 int rgb = material.getRGB(frameCounter);
-                                if (showMomenta && material.material().simulation == Simulation.FLUID && pixels.getMomenta(x,y).hasMomentum()) {
+                                if (showMomenta && material.material().simulation == Simulation.FLUID && !pixels.getMomenta(x,y).isNone()) {
                                     Momenta m = pixels.getMomenta(x,y);
                                     rgb = Color.BLUE.getRGB();
-                                    if (m.has(Momentum.LEFT))
+                                    if (m.is(Momentum.LEFT))
                                         rgb = Color.CYAN.getRGB();
-                                    if (m.has(Momentum.RIGHT))
+                                    if (m.is(Momentum.RIGHT))
                                         rgb = Color.MAGENTA.getRGB();
                                 }
 
-                                if (false && !(material.material().simulation == Simulation.FLUID && pixels.getMomenta(x,y).hasMomentum())) {
+                                if (false && !(material.material().simulation == Simulation.FLUID && !pixels.getMomenta(x,y).isNone())) {
                                     main.setRGB(x, y, new Color(rgb |= (200 & 0xff), true).getRGB());
                                 } else {
                                     main.setRGB(x, y, rgb);

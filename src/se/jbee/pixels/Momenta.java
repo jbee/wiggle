@@ -2,7 +2,6 @@ package se.jbee.pixels;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.stream.Stream;
 
 public final class Momenta implements Iterable<Momentum> {
 
@@ -28,15 +27,23 @@ public final class Momenta implements Iterable<Momentum> {
         return mask;
     }
 
-    public boolean hasMomentum() {
-        return momenta != 0;
+    public boolean isNone() {
+        return momenta == 0;
     }
 
-    public boolean has(Momentum momentum) {
-        return has(momentum.ordinal());
+    public boolean is(Momentum momentum) {
+        return is(momentum.ordinal());
     }
 
-    private boolean has(int index) {
+    public boolean isLeft() {
+        return is(Momentum.LEFT);
+    }
+
+    public boolean isRight() {
+        return is(Momentum.RIGHT);
+    }
+
+    private boolean is(int index) {
         return (momenta & (1 << index)) > 0;
     }
 
@@ -73,7 +80,7 @@ public final class Momenta implements Iterable<Momentum> {
             if (left <= 0)
                 throw new NoSuchElementException();
             while (index < MOMENTA.length) {
-                if (has(index)) {
+                if (is(index)) {
                     left--;
                     return MOMENTA[index++];
                 }
