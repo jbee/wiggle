@@ -9,7 +9,7 @@ public final class Material {
     public final String name;
     public final byte id;
     public final MaterialGroup group;
-    public final Behaviour behaviour;
+    public final Effect effect;
     public final int density;
     private final MaterialVariant[] variants;
 
@@ -23,16 +23,16 @@ public final class Material {
     //TODO the simulation effect might be slower (like diffuse body in water vs. dense body in water) then every turn
     //     also some fluids might mix very slow due to similar density
 
-    public Material(Materials materials, String name, MaterialGroup group, Behaviour behaviour, int density) {
-        this(materials, materials.nextId(), name, group, behaviour, density);
+    public Material(Materials materials, String name, MaterialGroup group, Effect effect, int density) {
+        this(materials, materials.nextId(), name, group, effect, density);
     }
 
-    private Material(Materials materials, int id, String name, MaterialGroup group, Behaviour behaviour, int density, MaterialVariant... variants) {
+    private Material(Materials materials, int id, String name, MaterialGroup group, Effect effect, int density, MaterialVariant... variants) {
         this.materials = materials;
         this.name = name;
         this.id = (byte) id;
         this.group = group;
-        this.behaviour = behaviour;
+        this.effect = effect;
         this.density = density;
         this.variants = variants;
         materials.add(this);
@@ -45,11 +45,11 @@ public final class Material {
     public Material addVariant(String name, int animationSpeed, Color... colors) {
         MaterialVariant[] variants = Arrays.copyOf(this.variants, this.variants.length + 1);
         variants[this.variants.length] = new MaterialVariant(() -> materials.byId(id), this.variants.length, name, animationSpeed, colors);
-        return new Material(materials, id, this.name, group, behaviour, density, variants);
+        return new Material(materials, id, this.name, group, effect, density, variants);
     }
 
     public boolean isSimulated() {
-        return behaviour != null;
+        return effect != null;
     }
 
     public boolean displaces(Material other) {
@@ -63,5 +63,12 @@ public final class Material {
     public MaterialVariant variant(Rnd rnd) {
         //TODO also consider occurances of variants
         return variants.length == 1 ? variants[0] : variant(rnd.nextInt(0, variants.length-1));
+    }
+
+    @Override
+    public String toString() {
+        return "Material{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }

@@ -12,7 +12,7 @@ public class Renderer {
     private static final long TARGET_FRAME_DURATION = 1000 / TARGET_FPS;
     private static final long TARGET_SIM_LOOP_DURATION = 1000 / TARGET_SLPS;
 
-    private static GameSimulation pixels;
+    private static World pixels;
 
     private static Frame frame;
     private static Canvas canvas;
@@ -85,7 +85,7 @@ public class Renderer {
         });
         frame.setVisible(true);
 
-        pixels = new GameSimulation(gameWidth, gameHeight, Materials.TEST, Materials.HardRock);
+        pixels = new World(gameWidth, gameHeight, Materials.TEST, Materials.HardRock);
 
         startRendering();
         startSimulation();
@@ -119,7 +119,7 @@ public class Renderer {
                 boolean run = true;
                 while (run) {
                     long before = System.currentTimeMillis();
-                    pixels.simulate();
+                    pixels.tick();
                     simCounter++;
                     // some sources...
                     if (addParticles) {
@@ -150,7 +150,7 @@ public class Renderer {
             pixels.replaceAt(pixels.width / 2 - 2, 0, Materials.Water.variant(rnd));
         }
         if (frame % 4 == 0) {
-            pixels.replaceAt(pixels.width / 2 + 30, 0, Materials.Oil.variant(rnd));
+            pixels.replaceAt(pixels.width / 2 - 2, pixels.height - 20, Materials.Steam.variant(rnd));
         }
         if (frame % 2 == 0) {
             pixels.replaceAt(pixels.width / 2 - 50, 0, Materials.Slime.variant(rnd));

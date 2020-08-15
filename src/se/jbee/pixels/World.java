@@ -1,6 +1,6 @@
 package se.jbee.pixels;
 
-public final class GameSimulation {
+public final class World {
 
     public final int width;
     public final int height;
@@ -16,7 +16,7 @@ public final class GameSimulation {
 
     private int loopCount;
 
-    GameSimulation(int width, int height, Materials materials, Material border) {
+    World(int width, int height, Materials materials, Material border) {
         this.width = width;
         this.height = height;
         this.materials = materials;
@@ -56,7 +56,7 @@ public final class GameSimulation {
         return new Momenta((matrix[y * width + x] >> 16) & 0xFF);
     }
 
-    public GameSimulation clearMomentaAt(int x, int y) {
+    public World clearMomentaAt(int x, int y) {
         int i = y * width + x;
         matrix[i] &= 0xff00ffff;
         return this;
@@ -88,29 +88,26 @@ public final class GameSimulation {
         return loopCount;
     }
 
-    public void simulate() {
+    public void tick() {
         loopCount++;
         boolean leftToRight = nextLeftToRight;
         for (int y = height - 1; y >= 0; y--) {
             if (leftToRight) {
                 for (int x = 0; x < width; x++) {
-                    simulate(x, y, +1);
+                    tick(x, y, +1);
                 }
             } else {
                 for (int x = width-1; x >= 0; x--) {
-                    simulate(x, y, -1);
+                    tick(x, y, -1);
                 }
             }
         }
         nextLeftToRight = !nextLeftToRight;
     }
 
-    private boolean simulate(int x, int y, int dx) {
-        Material material = materialAt(x, y);
-        if (material.isSimulated()) {
-            return material.behaviour.simulate(x, y, this, dx);
-        }
-        return false;
+    private boolean tick(int x, int y, int dx) {
+        Material cell = materialAt(x, y);
+        return cell.isSimulated() &&  cell.effect.applyTo(cell, x, y, this, dx);
     }
 
 }
