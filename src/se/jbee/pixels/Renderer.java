@@ -8,7 +8,9 @@ public class Renderer {
 
     private static final int GAME_WIDTH = 640, GAME_HEIGHT = 360;
     private static final int TARGET_FPS = 60;
+    private static final int TARGET_SLPS = 120;
     private static final long TARGET_FRAME_DURATION = 1000 / TARGET_FPS;
+    private static final long TARGET_SIM_LOOP_DURATION = 1000 / TARGET_SLPS;
 
     private static GameSimulation pixels;
 
@@ -20,11 +22,12 @@ public class Renderer {
     private static int factor = 1;
 
     private static volatile int simCounter;
+    private static volatile long sumDuration;
 
     private static boolean showMomenta = false;
     private static boolean addParticles = false;
 
-    static int toolMaterialId = WorldMaterials.water.id;
+    static int toolMaterialId = Materials.Water.id;
 
     public static void init() {
         getBestSize();
@@ -73,16 +76,16 @@ public class Renderer {
                     int size = 20;
                     for (int yi = 0; yi < size; yi++)
                         for (int xi = 0; xi < size; xi++)
-                            pixels.insert(x + xi, y + yi, WorldMaterials.TEST.byId(toolMaterialId).variant(pixels.rnd));
+                            pixels.replaceAt(x + xi, y + yi, Materials.TEST.byId(toolMaterialId).variant(pixels.rnd));
                 } else if (e.getButton() == MouseEvent.BUTTON3) {
-                    toolMaterialId = (toolMaterialId +1) % WorldMaterials.TEST.count();
+                    toolMaterialId = (toolMaterialId +1) % Materials.TEST.count();
                     createAndSetCursor();
                 }
             }
         });
         frame.setVisible(true);
 
-        pixels = new GameSimulation(gameWidth, gameHeight, WorldMaterials.TEST, WorldMaterials.eterium);
+        pixels = new GameSimulation(gameWidth, gameHeight, Materials.TEST, Materials.HardRock);
 
         startRendering();
         startSimulation();
@@ -92,7 +95,7 @@ public class Renderer {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         int size = 20 * factor;
         BufferedImage cursor = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-        MaterialVariant variant = WorldMaterials.TEST.byId(toolMaterialId).variant(0);
+        MaterialVariant variant = Materials.TEST.byId(toolMaterialId).variant(0);
         int rgb = variant.isPainted() ? variant.getRGB(0) : Color.WHITE.getRGB();
         for (int y = 0; y < size; y++)
             cursor.setRGB(0,y, rgb);
@@ -108,35 +111,29 @@ public class Renderer {
     }
 
     private static void startSimulation() {
-
         Rnd rnd = pixels.rnd;
-         putWalls(rnd);
+        putWalls(rnd);
         Thread sim = new Thread() {
             @Override
             public void run() {
-                boolean simulate = true;
-                int frame = 0;
-                while (simulate) {
+                boolean run = true;
+                while (run) {
+                    long before = System.currentTimeMillis();
                     pixels.simulate();
                     simCounter++;
                     // some sources...
                     if (addParticles) {
-                        if (frame % 2 == 0) {
-                            pixels.insert(pixels.width / 2, 0, WorldMaterials.sand.variant(rnd));
-                            pixels.insert(pixels.width / 2 - 2, 0, WorldMaterials.water.variant(rnd));
-                        }
-                        if (frame % 4 == 0) {
-                            pixels.insert(pixels.width / 2 + 30, 0, WorldMaterials.oil.variant(rnd));
-                        }
-                        if (frame % 2 == 0) {
-                            pixels.insert(pixels.width / 2 - 50, 0, WorldMaterials.slime.variant(rnd));
-                        }
+                        randomPixelStream(rnd);
                     }
-                    frame++;
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        simulate = false;
+                    long duration = System.currentTimeMillis() - before;
+                    sumDuration += duration;
+                    long sleep = TARGET_SIM_LOOP_DURATION - duration;
+                    if (sleep > 0) {
+                        try {
+                            Thread.sleep(sleep);
+                        } catch (InterruptedException e) {
+                            run = false;
+                        }
                     }
                 }
             }
@@ -146,37 +143,51 @@ public class Renderer {
         sim.start();
     }
 
+    private static void randomPixelStream(Rnd rnd) {
+        int frame = pixels.loopCount();
+        if (frame % 2 == 0) {
+            pixels.replaceAt(pixels.width / 2, 0, Materials.Dirt.variant(rnd));
+            pixels.replaceAt(pixels.width / 2 - 2, 0, Materials.Water.variant(rnd));
+        }
+        if (frame % 4 == 0) {
+            pixels.replaceAt(pixels.width / 2 + 30, 0, Materials.Oil.variant(rnd));
+        }
+        if (frame % 2 == 0) {
+            pixels.replaceAt(pixels.width / 2 - 50, 0, Materials.Slime.variant(rnd));
+        }
+    }
+
     private static void putWalls(Rnd rnd) {
-        Material wall = WorldMaterials.eterium;
+        Material wall = Materials.HardRock;
         for (int x = 0; x < pixels.width; x++)
-            pixels.insert(x, -10, wall); // draw bottom
+            pixels.replaceAt(x, -10, wall); // draw bottom
 
         for (int x = pixels.width/2-5; x < pixels.width/2+5; x++)
-            pixels.insert(x, pixels.height /2, wall); // draw bottom
+            pixels.replaceAt(x, pixels.height /2, wall); // draw bottom
 
         for (int i = 0; i < 5; i++)
-            pixels.insert(pixels.width/2 + 3 +i, pixels.height - 50 , wall);
+            pixels.replaceAt(pixels.width/2 + 3 +i, pixels.height - 50 , wall);
 
         for (int y = pixels.height-10; y > pixels.height-20; y--) {
-            pixels.insert(pixels.width/2 - 10, y, wall);
-            pixels.insert(pixels.width/2 + 10, y, wall);
+            pixels.replaceAt(pixels.width/2 - 10, y, wall);
+            pixels.replaceAt(pixels.width/2 + 10, y, wall);
         }
 
         for (int i = 0; i < 20; i++)
-            pixels.insert(pixels.width/2 - 30, pixels.height-10-i, wall);
+            pixels.replaceAt(pixels.width/2 - 30, pixels.height-10-i, wall);
 
         for (int i = 0; i < 100; i++)
-            pixels.insert(20, pixels.height-1-i, wall);
+            pixels.replaceAt(20, pixels.height-1-i, wall);
 
         for (int y = 10; y < 80; y++)
             for (int x = 50; x < 100; x++)
-                pixels.insert(x, y, WorldMaterials.water.variant(rnd));
+                pixels.replaceAt(x, y, Materials.Water.variant(rnd));
 
-            if (true)
-        for (int i = 0; i < 30; i++) {
-            pixels.insert(40 + i, 80 + i, WorldMaterials.eterium);
-            pixels.insert(40 + i, 81 + i, WorldMaterials.eterium);
-        }
+        if (true)
+            for (int i = 0; i < 30; i++) {
+                pixels.replaceAt(40 + i, 80 + i, Materials.HardRock);
+                pixels.replaceAt(40 + i, 81 + i, Materials.HardRock);
+            }
     }
 
     private static void startRendering() {
@@ -188,7 +199,8 @@ public class Renderer {
                 long lastFpsTime = System.currentTimeMillis();
                 int frameCounter = 0;
                 int currentFPS = 0;
-                int currentSPS = 0;
+                int currentSLPS = 0;
+                long currentAvgSimDuration = 0L;
                 boolean draw = true;
                 while (draw) {
                     frameCounter ++;
@@ -196,9 +208,11 @@ public class Renderer {
                     if (now > lastFpsTime + 1000) {
                         lastFpsTime += 1000;
                         currentFPS = frameCounter;
-                        currentSPS = simCounter;
+                        currentSLPS = simCounter;
+                        currentAvgSimDuration = currentSLPS == 0 ? 0L : sumDuration / currentSLPS;
                         frameCounter = 0;
                         simCounter = 0;
+                        sumDuration = 0L;
                     }
 
                     Graphics g2d = main.getGraphics();
@@ -207,17 +221,24 @@ public class Renderer {
 
                     for (int y = 0; y < pixels.height; y++) {
                         for (int x = 0; x < pixels.width; x++) {
-                            MaterialVariant material = pixels.getVariant(x, y);
+                            MaterialVariant material = pixels.materialVariantAt(x, y);
                             if (material.isPainted()) {
                                 int rgb = material.getRGB(frameCounter);
                                 if (showMomenta) {
-                                    Momenta m = pixels.getMomenta(x,y);
+                                    Momenta m = pixels.momentaAt(x,y);
                                     if (m.isLeft())
                                         rgb = Color.CYAN.getRGB();
                                     if (m.isRight())
                                         rgb = Color.MAGENTA.getRGB();
-                                    if (m.is(Momentum.DOWN))
+                                    if (m.isDown())
                                         rgb = Color.YELLOW.getRGB();
+                                    if (m.isUp())
+                                        rgb = Color.BLUE.getRGB();
+                                }
+                                if (material.material() == Materials.Poison) {
+                                    if (x > 0 && pixels.materialAt(x-1, y) != Materials.Poison
+                                            || x < pixels.width-1 && pixels.materialAt(x+1,y) != Materials.Poison)
+                                        rgb = new Color(rgb).brighter().brighter().getRGB();
                                 }
                                 main.setRGB(x, y, rgb);
                             }
@@ -230,9 +251,9 @@ public class Renderer {
 
                     g2d.drawImage(main, 0,0, canvasWidth, canvasHeight, null);
                     g2d.setColor(Color.RED);
-                    g2d.drawString("FPS: "+ currentFPS, 10, 10);
-                    g2d.drawString("SPS:"+ currentSPS +" ("+(currentSPS == 0 ? 0 : 1000/currentSPS)+"ms avg)", 10, 26);
-                    g2d.drawString("Tool: "+WorldMaterials.TEST.byId(toolMaterialId).name, 10, 42);
+                    g2d.drawString("FPS: "+ currentFPS  +" ("+(currentFPS >= TARGET_FPS ? "on point" : "degraded")+")", 10, 10);
+                    g2d.drawString("SLPS:"+ currentSLPS +" ("+currentAvgSimDuration+"ms avg = "+(100*currentAvgSimDuration/TARGET_SIM_LOOP_DURATION)+"% CPU Time)", 10, 26);
+                    g2d.drawString("Tool: "+ Materials.TEST.byId(toolMaterialId).name, 10, 42);
 
                     g2d.dispose();
 

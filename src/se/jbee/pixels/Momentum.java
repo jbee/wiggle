@@ -8,9 +8,9 @@ public enum Momentum {
     DOWN,
     SPIN;
 
-    public final int mask;
+    public final int toGameCell;
 
     Momentum() {
-        this.mask = 1 << ordinal() + 16;
+        this.toGameCell = 1 << ordinal() + 16;
     }
 }

@@ -43,6 +43,14 @@ public final class Momenta implements Iterable<Momentum> {
         return is(Momentum.RIGHT);
     }
 
+    public boolean isUp() {
+        return is(Momentum.UP);
+    }
+
+    public boolean isDown() {
+        return is(Momentum.DOWN);
+    }
+
     private boolean is(int index) {
         return (momenta & (1 << index)) > 0;
     }
@@ -65,6 +73,7 @@ public final class Momenta implements Iterable<Momentum> {
     }
 
     private static final Momentum[] MOMENTA = Momentum.values();
+
     private final class MomentumIterator implements Iterator<Momentum> {
 
         private int left = Integer.bitCount(momenta);

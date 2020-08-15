@@ -5,10 +5,11 @@ import java.util.Arrays;
 
 public final class Material {
 
-    public final WorldMaterials materials;
+    public final Materials materials;
     public final String name;
     public final byte id;
-    public final Simulation simulation;
+    public final MaterialGroup group;
+    public final Behaviour behaviour;
     public final int density;
     private final MaterialVariant[] variants;
 
@@ -22,15 +23,16 @@ public final class Material {
     //TODO the simulation effect might be slower (like diffuse body in water vs. dense body in water) then every turn
     //     also some fluids might mix very slow due to similar density
 
-    public Material(WorldMaterials materials, String name, Simulation simulation, int density) {
-        this(materials, materials.nextId(), name, simulation, density);
+    public Material(Materials materials, String name, MaterialGroup group, Behaviour behaviour, int density) {
+        this(materials, materials.nextId(), name, group, behaviour, density);
     }
 
-    private Material(WorldMaterials materials, int id, String name, Simulation simulation, int density, MaterialVariant... variants) {
+    private Material(Materials materials, int id, String name, MaterialGroup group, Behaviour behaviour, int density, MaterialVariant... variants) {
         this.materials = materials;
         this.name = name;
         this.id = (byte) id;
-        this.simulation = simulation;
+        this.group = group;
+        this.behaviour = behaviour;
         this.density = density;
         this.variants = variants;
         materials.add(this);
@@ -40,14 +42,14 @@ public final class Material {
         return addVariant(name, 1, colors);
     }
 
-    public Material addVariant(String name, int annimationSpeed, Color... colors) {
+    public Material addVariant(String name, int animationSpeed, Color... colors) {
         MaterialVariant[] variants = Arrays.copyOf(this.variants, this.variants.length + 1);
-        variants[this.variants.length] = new MaterialVariant(() -> materials.byId(id), this.variants.length, name, annimationSpeed, colors);
-        return new Material(materials, id, this.name, simulation, density, variants);
+        variants[this.variants.length] = new MaterialVariant(() -> materials.byId(id), this.variants.length, name, animationSpeed, colors);
+        return new Material(materials, id, this.name, group, behaviour, density, variants);
     }
 
     public boolean isSimulated() {
-        return simulation != null;
+        return behaviour != null;
     }
 
     public boolean displaces(Material other) {
