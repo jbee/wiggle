@@ -62,6 +62,10 @@ public final class Rnd {
         return Math.abs(nextLong()) < Long.MAX_VALUE / 100L * percent;
     }
 
+    public boolean nextPermille(int permille) {
+        return Math.abs(nextLong()) < Long.MAX_VALUE / 1000L * permille;
+    }
+
     public float nextFloat() {
         return (float)((double)nextLong() / Long.MAX_VALUE);
     }

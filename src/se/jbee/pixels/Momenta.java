@@ -5,11 +5,6 @@ import java.util.NoSuchElementException;
 
 public final class Momenta implements Iterable<Momentum> {
 
-    public static final Momenta NONE = new Momenta(0);
-    public static final Momenta JUST_LEFT = new Momenta(Momentum.LEFT);
-    public static final Momenta JUST_RIGHT = new Momenta(Momentum.RIGHT);
-    public static final Momenta JUST_DOWN = new Momenta(Momentum.DOWN);
-
     private final int momenta;
 
     public Momenta(int momenta) {
@@ -23,7 +18,7 @@ public final class Momenta implements Iterable<Momentum> {
     private static int bitmask(Momentum[] momenta) {
         int mask = 0;
         for (Momentum m : momenta)
-            mask |= (1 << m.ordinal());
+            mask |= m.toGameCell;
         return mask;
     }
 
@@ -32,7 +27,7 @@ public final class Momenta implements Iterable<Momentum> {
     }
 
     public boolean is(Momentum momentum) {
-        return is(momentum.ordinal());
+        return (momenta & momentum.toGameCell) > 0;
     }
 
     public boolean isLeft() {
@@ -51,12 +46,8 @@ public final class Momenta implements Iterable<Momentum> {
         return is(Momentum.DOWN);
     }
 
-    private boolean is(int index) {
-        return (momenta & (1 << index)) > 0;
-    }
-
     public int toGameCell() {
-        return momenta << 16;
+        return momenta;
     }
 
     @Override
@@ -77,7 +68,7 @@ public final class Momenta implements Iterable<Momentum> {
     private final class MomentumIterator implements Iterator<Momentum> {
 
         private int left = Integer.bitCount(momenta);
-        private int index = 0;
+        private int nextIndex = 0;
 
         @Override
         public boolean hasNext() {
@@ -88,12 +79,13 @@ public final class Momenta implements Iterable<Momentum> {
         public Momentum next() {
             if (left <= 0)
                 throw new NoSuchElementException();
-            while (index < MOMENTA.length) {
-                if (is(index)) {
+            for (int i = nextIndex; i < MOMENTA.length; i++) {
+                Momentum m = MOMENTA[i];
+                if (is(m)) {
+                    nextIndex =i+1;
                     left--;
-                    return MOMENTA[index++];
+                    return m;
                 }
-                index++;
             }
             throw new NoSuchElementException();
         }

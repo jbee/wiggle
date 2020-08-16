@@ -10,17 +10,17 @@ public final class World {
     private final int[] matrix;
 
     // TODO coating material for each pixel
-    private final Materials materials;
-    private final Material border;
+    private final Substances substances;
+    private final Substance edge;
     private boolean nextLeftToRight = false;
 
     private int loopCount;
 
-    World(int width, int height, Materials materials, Material border) {
+    World(int width, int height, Substances substances, Substance edge) {
         this.width = width;
         this.height = height;
-        this.materials = materials;
-        this.border = border;
+        this.substances = substances;
+        this.edge = edge;
         this.matrix = new int[width * height];
     }
 
@@ -28,10 +28,10 @@ public final class World {
         return (byte) ((value >> (n * 8)) & 0xFF);
     }
 
-    public void replaceAt(int x, int y, Material material) {
-        replaceAt(x,y, material.variant(0));
+    public void replaceAt(int x, int y, Substance substance) {
+        replaceAt(x,y, substance.variety(0));
     }
-    public void replaceAt(int x, int y, MaterialVariant material) {
+    public void replaceAt(int x, int y, SubstanceVariety material) {
         if (y < 0)
             y = height + y;
         if (x < 0)
@@ -39,35 +39,41 @@ public final class World {
         matrix[y * width + x] = material.toGameCell();
     }
 
-    public Material materialAt(int x, int y) {
+    public Substance substanceAt(int x, int y) {
         if (x < 0 || x >= width || y < 0 || y >= height)
-            return border;
-        return materials.byId(matrix[y * width + x] & 0xFF);
+            return edge;
+        return substances.byId(matrix[y * width + x] & 0xFF);
     }
 
-    public MaterialVariant materialVariantAt(int x, int y) {
+    public SubstanceVariety varietyAt(int x, int y) {
         if (x < 0 || x >= width || y < 0 || y >= height)
-            return border.variant(0);
+            return edge.variety(0);
         int cell = this.matrix[y * width + x];
-        return materials.byId(cell & 0xFF).variant(byteOfInt(cell, 1));
+        return substances.byId(cell & 0xFF).variety(byteOfInt(cell, 1));
     }
 
     public Momenta momentaAt(int x, int y) {
-        return new Momenta((matrix[y * width + x] >> 16) & 0xFF);
+        return new Momenta(matrix[y * width + x] & 0x00FF0000);
     }
 
-    public World clearMomentaAt(int x, int y) {
+    /**
+     * Clears any existing {@link Momentum}
+     */
+    public World calm(int x, int y) {
         int i = y * width + x;
         matrix[i] &= 0xff00ffff;
         return this;
     }
 
     public boolean swap(int x, int y, int dx, int dy) {
-        if (dx == 0 && dy == 0)
+        int i = y * width + x;
+        if (dx == 0 && dy == 0) {
+            int moved = matrix[i];
+            matrix[i] = moved |= Momentum.SPIN.toGameCell;
             return false;
+        }
         int x2 = x+dx;
         int y2 = y+dy;
-        int i = y * width + x;
         int i2 = y2 * width + x2;
         int tmp = matrix[i2];
         int moved = matrix[i];
@@ -79,13 +85,17 @@ public final class World {
             moved &= 0xff00ffff;
             moved |= dx < 0 ? Momentum.LEFT.toGameCell : Momentum.RIGHT.toGameCell;
         }
-        this.matrix[i2] = moved;
-        this.matrix[i] = tmp;
+        matrix[i2] = moved;
+        matrix[i] = tmp;
         return true;
     }
 
     public int loopCount() {
         return loopCount;
+    }
+
+    public int randomDx() {
+        return rnd.nextChance(50) ? -1: 1;
     }
 
     public void tick() {
@@ -106,7 +116,7 @@ public final class World {
     }
 
     private boolean tick(int x, int y, int dx) {
-        Material cell = materialAt(x, y);
+        Substance cell = substanceAt(x, y);
         return cell.isSimulated() &&  cell.effect.applyTo(cell, x, y, this, dx);
     }
 
