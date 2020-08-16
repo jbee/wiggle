@@ -28,7 +28,7 @@ public interface Animation {
     static Animation blink(int speed, int baseOccurrence, Color base, int highlightOccurrence, Color highlight) {
         return (x, y, world, frame) -> {
             int test = (int) (x+y+frame % 100);
-            return world.rnd.nextInt(0, baseOccurrence+highlightOccurrence) < highlightOccurrence
+            return world.rng.nextInt(0, baseOccurrence+highlightOccurrence) < highlightOccurrence
                     ? highlight.getRGB()
                     : base.getRGB();
         };
@@ -46,7 +46,7 @@ public interface Animation {
                 frameGroup[0] = g;
                 for (int yi = 0; yi < rowRGB.length; yi++)
                     for (int xi = 0; xi < rowRGB[yi].length; xi++)
-                        rowRGB[yi][xi] = rgbs[world.rnd.nextInt() % rgbs.length];
+                        rowRGB[yi][xi] = rgbs[world.rng.nextInt() % rgbs.length];
             }
             return rowRGB[y % 40][x % 40];
         };

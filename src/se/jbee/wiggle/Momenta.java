@@ -18,7 +18,7 @@ public final class Momenta implements Iterable<Momentum> {
     private static int bitmask(Momentum[] momenta) {
         int mask = 0;
         for (Momentum m : momenta)
-            mask |= m.toGameCell;
+            mask |= m.asGameCell;
         return mask;
     }
 
@@ -27,7 +27,7 @@ public final class Momenta implements Iterable<Momentum> {
     }
 
     public boolean is(Momentum momentum) {
-        return (momenta & momentum.toGameCell) > 0;
+        return (momenta & momentum.asGameCell) > 0;
     }
 
     public boolean isLeft() {

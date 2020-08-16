@@ -27,7 +27,7 @@ public class Renderer {
     private static boolean showMomenta = false;
     private static boolean addParticles = false;
 
-    static int toolMaterialId = Substances.Water.id;
+    static int toolMaterialId = Substances.Water.substanceId;
 
     public static void init() {
         getBestSize();
@@ -76,7 +76,7 @@ public class Renderer {
                     int size = 20;
                     for (int yi = 0; yi < size; yi++)
                         for (int xi = 0; xi < size; xi++)
-                            world.replaceAt(x + xi, y + yi, Substances.TEST.byId(toolMaterialId).variety(world.rnd));
+                            world.replaceAt(x + xi, y + yi, Substances.TEST.byId(toolMaterialId).variety(world.rng));
                 } else if (e.getButton() == MouseEvent.BUTTON3) {
                     toolMaterialId = (toolMaterialId +1) % Substances.TEST.count();
                     createAndSetCursor();
@@ -95,8 +95,8 @@ public class Renderer {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         int size = 20 * factor;
         BufferedImage cursor = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-        SubstanceVariety variant = Substances.TEST.byId(toolMaterialId).variety(0);
-        int rgb = variant.isPainted() ? variant.animation.rgba(0,0, world, 1L) : Color.WHITE.getRGB();
+        Variety variant = Substances.TEST.byId(toolMaterialId).variety(0);
+        int rgb = variant.isAnimated() ? variant.animation.rgba(0,0, world, 1L) : Color.WHITE.getRGB();
         for (int y = 0; y < size; y++)
             cursor.setRGB(0,y, rgb);
         for (int y = 0; y < size; y++)
@@ -111,8 +111,8 @@ public class Renderer {
     }
 
     private static void startSimulation() {
-        Rnd rnd = world.rnd;
-        putWalls(rnd);
+        RNG rng = world.rng;
+        putWalls(rng);
         Thread sim = new Thread() {
             @Override
             public void run() {
@@ -123,7 +123,7 @@ public class Renderer {
                     simCounter++;
                     // some sources...
                     if (addParticles) {
-                        randomPixelStream(rnd);
+                        randomPixelStream(rng);
                     }
                     long duration = System.currentTimeMillis() - before;
                     sumDuration += duration;
@@ -143,21 +143,21 @@ public class Renderer {
         sim.start();
     }
 
-    private static void randomPixelStream(Rnd rnd) {
+    private static void randomPixelStream(RNG rng) {
         int frame = world.loopCount();
         if (frame % 2 == 0) {
-            world.replaceAt(world.width / 2, 0, Substances.Dirt.variety(rnd));
-            world.replaceAt(world.width / 2 - 2, 0, Substances.Water.variety(rnd));
+            world.replaceAt(world.width / 2, 0, Substances.Dirt.variety(rng));
+            world.replaceAt(world.width / 2 - 2, 0, Substances.Water.variety(rng));
         }
         if (frame % 4 == 0) {
-            world.replaceAt(world.width / 2 - 2, world.height - 20, Substances.Steam.variety(rnd));
+            world.replaceAt(world.width / 2 - 2, world.height - 20, Substances.Steam.variety(rng));
         }
         if (frame % 2 == 0) {
-            world.replaceAt(world.width / 2 - 50, 0, Substances.Slime.variety(rnd));
+            world.replaceAt(world.width / 2 - 50, 0, Substances.Slime.variety(rng));
         }
     }
 
-    private static void putWalls(Rnd rnd) {
+    private static void putWalls(RNG rng) {
         Substance wall = Substances.HardRock;
         for (int x = 0; x < world.width; x++)
             world.replaceAt(x, -10, wall); // draw bottom
@@ -181,7 +181,7 @@ public class Renderer {
 
         for (int y = 10; y < 80; y++)
             for (int x = 50; x < 100; x++)
-                world.replaceAt(x, y, Substances.Water.variety(rnd));
+                world.replaceAt(x, y, Substances.Water.variety(rng));
 
         if (true)
             for (int i = 0; i < 30; i++) {
@@ -223,8 +223,8 @@ public class Renderer {
 
                     for (int y = 0; y < world.height; y++) {
                         for (int x = 0; x < world.width; x++) {
-                            SubstanceVariety material = world.varietyAt(x, y);
-                            if (material.isPainted()) {
+                            Variety material = world.varietyAt(x, y);
+                            if (material.isAnimated()) {
                                 int rgb = material.animation.rgba(x,y, world, frame);
                                 if (showMomenta) {
                                     Momenta m = world.momentaAt(x,y);
@@ -237,7 +237,7 @@ public class Renderer {
                                     if (m.isUp())
                                         rgb = Color.BLUE.getRGB();
                                 }
-                                if (material.material() == Substances.Poison) {
+                                if (material.substance() == Substances.Poison) {
                                     if (x > 0 && world.substanceAt(x-1, y) != Substances.Poison
                                             || x < world.width-1 && world.substanceAt(x+1,y) != Substances.Poison)
                                         rgb = new Color(rgb).brighter().brighter().getRGB();

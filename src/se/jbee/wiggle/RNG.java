@@ -9,15 +9,15 @@ package se.jbee.wiggle;
  * Thereby only the seed is needed to recreate some of the randomly but fix
  * appearing game content.
  */
-public final class Rnd {
+public final class RNG {
 
     private long low, high;
 
-    public Rnd() {
+    public RNG() {
         this(System.currentTimeMillis());
     }
 
-    public Rnd(long seed) {
+    public RNG(long seed) {
         low=seed;
     }
 

@@ -5,7 +5,7 @@ public final class World {
     public final int width;
     public final int height;
 
-    public final Rnd rnd = new Rnd();
+    public final RNG rng = new RNG();
 
     private final int[] matrix;
 
@@ -31,12 +31,12 @@ public final class World {
     public void replaceAt(int x, int y, Substance substance) {
         replaceAt(x,y, substance.variety(0));
     }
-    public void replaceAt(int x, int y, SubstanceVariety material) {
+    public void replaceAt(int x, int y, Variety material) {
         if (y < 0)
             y = height + y;
         if (x < 0)
             x = width + x;
-        matrix[y * width + x] = material.toGameCell();
+        matrix[y * width + x] = material.asGameCell();
     }
 
     public Substance substanceAt(int x, int y) {
@@ -45,7 +45,7 @@ public final class World {
         return substances.byId(matrix[y * width + x] & 0xFF);
     }
 
-    public SubstanceVariety varietyAt(int x, int y) {
+    public Variety varietyAt(int x, int y) {
         if (x < 0 || x >= width || y < 0 || y >= height)
             return edge.variety(0);
         int cell = this.matrix[y * width + x];
@@ -69,7 +69,7 @@ public final class World {
         int i = y * width + x;
         if (dx == 0 && dy == 0) {
             int moved = matrix[i];
-            matrix[i] = moved |= Momentum.SPIN.toGameCell;
+            matrix[i] = moved |= Momentum.SPIN.asGameCell;
             return false;
         }
         int x2 = x+dx;
@@ -79,11 +79,11 @@ public final class World {
         int moved = matrix[i];
         if (dy != 0) { // clears
             moved &= 0xff00ffff;
-            moved |= dy < 0 ? Momentum.UP.toGameCell : Momentum.DOWN.toGameCell;
+            moved |= dy < 0 ? Momentum.UP.asGameCell : Momentum.DOWN.asGameCell;
         }
         if (dx != 0 && dy == 0) {
             moved &= 0xff00ffff;
-            moved |= dx < 0 ? Momentum.LEFT.toGameCell : Momentum.RIGHT.toGameCell;
+            moved |= dx < 0 ? Momentum.LEFT.asGameCell : Momentum.RIGHT.asGameCell;
         }
         matrix[i2] = moved;
         matrix[i] = tmp;
@@ -95,7 +95,7 @@ public final class World {
     }
 
     public int randomDx() {
-        return rnd.nextChance(50) ? -1: 1;
+        return rng.nextChance(50) ? -1: 1;
     }
 
     public void tick() {
@@ -117,7 +117,7 @@ public final class World {
 
     private boolean tick(int x, int y, int dx) {
         Substance cell = substanceAt(x, y);
-        return cell.isSimulated() &&  cell.effect.applyTo(cell, x, y, this, dx);
+        return !cell.isEffectless() &&  cell.effect.applyTo(cell, x, y, this, dx);
     }
 
 }

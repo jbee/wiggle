@@ -1,11 +1,13 @@
 package se.jbee.wiggle;
 
+import se.jbee.wiggle.effect.Nature;
+
 import java.awt.*;
 
 import static se.jbee.wiggle.Animation.*;
 import static se.jbee.wiggle.Effect.becomes;
 import static se.jbee.wiggle.Effect.pollutes;
-import static se.jbee.wiggle.MaterialGroup.*;
+import static se.jbee.wiggle.Phase.*;
 
 /**
  * A set of {@link Substance} that defines all {@link Substance}s used in a {@link World}.
@@ -20,16 +22,16 @@ public final class Substances {
     static final Substance HardRock = new Substance(TEST,"Hard Rock", SOLID_CRYSTALLINE, null, 1000)
             .addVariety("dense", fill(new Color(139, 94, 96)));
 
-    static final Substance Water = new Substance(TEST,"Water", FLUID, Effect.FLUID, 100)
+    static final Substance Water = new Substance(TEST,"Water", FLUID, Nature.FLUID, 100)
             .addVariety("sweet", fill(new Color(9, 125, 156, 174)));
 
-    static final Substance Steam = new Substance(TEST, "Steam", GASSY, Effect.GAS.and(becomes(Air, 1)), 10)
+    static final Substance Steam = new Substance(TEST, "Steam", GASSY, Nature.GAS.and(becomes(Air, 1)), 10)
             .addVariety("water", fill(new Color(184, 227, 232)));
 
-    static final Substance Poison = new Substance(TEST, "Poison", FLUID, Effect.FLUID.and(pollutes(other -> other == Water)), 100)
+    static final Substance Poison = new Substance(TEST, "Poison", FLUID, Nature.FLUID.and(pollutes(other -> other == Water)), 100)
             .addVariety("week", fill(new Color(184, 216, 22))); //, new Color(214, 254, 29)
 
-    static final Substance Healium = new Substance(TEST, "Healium", SPONGY, Effect.GOO.and(Effect.HEALIUM), 101)
+    static final Substance Cleansium = new Substance(TEST, "Cleansium", FLAKY, Nature.POWDER.and(Effect.HEALIUM), 101)
             .addVariety("bright", Animation.shuffle(10,
                     new Color(231, 131, 241),
                     new Color(224, 117, 234),
@@ -37,34 +39,34 @@ public final class Substances {
                     new Color(238, 182, 243),
                      new Color(246, 194, 252)));
 
-    static final Substance Oil = new Substance(TEST,"Oil", FLUID, Effect.FLUID, 40)
+    static final Substance Oil = new Substance(TEST,"Oil", FLUID, Nature.FLUID, 40)
             .addVariety("sticky", fill(new Color(194, 76, 36)));
 
-    static final Substance Slime = new Substance(TEST,"Soylent Green", SPONGY, Effect.GOO, 130)
+    static final Substance Slime = new Substance(TEST,"Soylent Green", GOOEY, Nature.GOO, 130)
             .addVariety("itchy", fill(new Color(178, 226, 3)))
             .addVariety("bitchy", fill(new Color(129, 229, 94)));
 
-    static final Substance Dirt = new Substance(TEST,"Dirt", SOLID_GRANULAR, Effect.SOLID_GRANULAR, 600)
+    static final Substance Dirt = new Substance(TEST,"Dirt", SOLID_GRANULAR, Nature.SOLID_GRANULAR, 600)
             .addVariety("chocolate", fill(new Color(213, 151, 75)))
             .addVariety("khaki", fill(new Color(221, 180, 128)))
             .addVariety("light", fill(new Color(255, 237, 206)))
             .addVariety("dust", fill(new Color(197, 175, 125)));
 
-    static final Substance LimeStone = new Substance(TEST, "Lime Stone", SOLID_CRYSTALLINE, Effect.SOLID, 800)
+    static final Substance LimeStone = new Substance(TEST, "Lime Stone", SOLID_CRYSTALLINE, Nature.SOLID, 800)
             .addVariety("a", pattern(new Color(167, 166, 171, 255), new Color(198, 203, 209, 255)));
 
-    static final Substance Nitre = new Substance(TEST, "Nitre", SOLID_GRANULAR, Effect.SOLID_GRANULAR, 200)
+    static final Substance Nitre = new Substance(TEST, "Nitre", SOLID_GRANULAR, Nature.SOLID_GRANULAR, 200)
             .addVariety("a", 2, fill(new Color(245, 120, 82)))
             .addVariety("b", fill(new Color(154, 76, 82)))
             .addVariety("c", fill(new Color(253, 160, 113)));
 
-    static final Substance Coal = new Substance(TEST, "Coal", SOLID_GRANULAR, Effect.SOLID_GRANULAR, 400)
+    static final Substance Coal = new Substance(TEST, "Coal", SOLID_GRANULAR, Nature.SOLID_GRANULAR, 400)
             .addVariety("a", fill(new Color(121, 96, 74)))
             .addVariety("c", fill(new Color(134, 111, 85)))
             .addVariety("b", fill(new Color(87, 68, 54)));
 
     // a pixel that caught fire never goes back
-    static final Substance Fire = new Substance(TEST, "Fire", SOLID_CRYSTALLINE, Effect.SOLID_GRANULAR, 200)
+    static final Substance Fire = new Substance(TEST, "Fire", SOLID_CRYSTALLINE, Nature.SOLID_GRANULAR, 200)
             .addVariety("a", Animation.sequence(19,
                     new Color(253, 249, 207),
                     new Color(254, 246, 96),
@@ -102,7 +104,7 @@ public final class Substances {
     }
 
     public void add(Substance m) {
-        materialsById[m.id] = m;
+        materialsById[m.substanceId] = m;
     }
 
     public Substance byId(int id) {

@@ -3,19 +3,20 @@ package se.jbee.wiggle;
 import java.util.Arrays;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.copyOf;
 
 public final class Substance {
 
     public final Substances substances;
     public final String name;
-    public final byte id;
-    public final MaterialGroup group;
+    public final byte substanceId;
+    public final Phase phase;
     public final Effect effect;
     public final int density;
-    private final SubstanceVariety[] variants;
+    private final Variety[] varieties;
     private final int totalOccurrence;
-    // flammable
-    // combustible
+    // whenIgnited => Effect for what happens when ignited, having an Effect also means it is combustible
+    // whenExploding => Effect for what happens when exploding
 
     // TODO "life-time" or change of behaviour after certain time can be done as part of the simulation based on chance.
     //  This means no state has to be kept to track if it is time for the change. it just happens on time on average.
@@ -24,19 +25,19 @@ public final class Substance {
     //TODO the simulation effect might be slower (like diffuse body in water vs. dense body in water) then every turn
     //     also some fluids might mix very slow due to similar density
 
-    public Substance(Substances substances, String name, MaterialGroup group, Effect effect, int density) {
-        this(substances, substances.nextId(), name, group, effect, density);
+    public Substance(Substances substances, String name, Phase phase, Effect effect, int density) {
+        this(substances, substances.nextId(), name, phase, effect, density);
     }
 
-    private Substance(Substances substances, int id, String name, MaterialGroup group, Effect effect, int density, SubstanceVariety... variants) {
+    private Substance(Substances substances, int substanceId, String name, Phase phase, Effect effect, int density, Variety... varieties) {
         this.substances = substances;
         this.name = name;
-        this.id = (byte) id;
-        this.group = group;
+        this.substanceId = (byte) substanceId;
+        this.phase = phase;
         this.effect = effect;
         this.density = density;
-        this.variants = variants;
-        this.totalOccurrence = asList(variants).stream().mapToInt(e -> e.occurrence).sum();
+        this.varieties = varieties;
+        this.totalOccurrence = asList(varieties).stream().mapToInt(e -> e.occurrence).sum();
         substances.add(this);
     }
 
@@ -45,37 +46,38 @@ public final class Substance {
     }
 
     public Substance addVariety(String name, int occurrence, Animation animation) {
-        SubstanceVariety[] variants = Arrays.copyOf(this.variants, this.variants.length + 1);
-        variants[this.variants.length] = new SubstanceVariety(() -> substances.byId(id), this.variants.length, name, occurrence, animation);
-        return new Substance(substances, id, this.name, group, effect, density, variants);
+        Variety[] newVarieties = copyOf(varieties, varieties.length + 1);
+        newVarieties[varieties.length] = new Variety(
+                () -> substances.byId(substanceId), varieties.length, name, occurrence, animation);
+        return new Substance(substances, substanceId, this.name, phase, effect, density, newVarieties);
     }
 
-    public boolean isSimulated() {
-        return effect != null;
+    public boolean isEffectless() {
+        return effect == null;
     }
 
     public boolean displaces(Substance other) {
         return density > other.density;
     }
 
-    public SubstanceVariety variety(int n) {
-        return variants[n];
+    public Variety variety(int n) {
+        return varieties[n];
     }
 
-    public SubstanceVariety variety(Rnd rnd) {
-        if (variants.length == 1)
-            return variants[0];
+    public Variety variety(RNG rng) {
+        if (varieties.length == 1)
+            return varieties[0];
         int index = 0;
-        if (totalOccurrence == variants.length) {
-            return variants[rnd.nextInt(0, totalOccurrence -1)];
+        if (totalOccurrence == varieties.length) {
+            return varieties[rng.nextInt(0, totalOccurrence -1)];
         }
-        int occur = rnd.nextInt(0, totalOccurrence);
-        for (int i = 0; i < variants.length; i++) {
-            if (occur <= variants[i].occurrence)
-                return variants[i];
-            occur -= variants[i].occurrence;
+        int occur = rng.nextInt(0, totalOccurrence);
+        for (int i = 0; i < varieties.length; i++) {
+            if (occur <= varieties[i].occurrence)
+                return varieties[i];
+            occur -= varieties[i].occurrence;
         }
-        return variants[0]; // error but...
+        return varieties[0]; // error but...
     }
 
     @Override
@@ -85,11 +87,4 @@ public final class Substance {
                 '}';
     }
 
-    public boolean isFluid() {
-        return group == MaterialGroup.FLUID;
-    }
-
-    public boolean isSolid() {
-        return group == MaterialGroup.SOLID_CRYSTALLINE || group == MaterialGroup.SOLID_GRANULAR;
-    }
 }
