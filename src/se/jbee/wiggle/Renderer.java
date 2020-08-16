@@ -1,4 +1,4 @@
-package se.jbee.pixels;
+package se.jbee.wiggle;
 
 import java.awt.*;
 import java.awt.event.*;

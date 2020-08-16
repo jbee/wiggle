@@ -1,9 +1,9 @@
-package se.jbee.pixels;
+package se.jbee.wiggle;
 
 import java.util.function.Predicate;
 
-import static se.jbee.pixels.Substances.Poison;
-import static se.jbee.pixels.Substances.Water;
+import static se.jbee.wiggle.Substances.Poison;
+import static se.jbee.wiggle.Substances.Water;
 
 /**
  * Encodes a {@link Substance}'s behaviour in the {@link World} pixel by pixel.

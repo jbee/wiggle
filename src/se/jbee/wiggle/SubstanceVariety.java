@@ -1,6 +1,5 @@
-package se.jbee.pixels;
+package se.jbee.wiggle;
 
-import java.awt.*;
 import java.util.function.Supplier;
 
 public final class SubstanceVariety {

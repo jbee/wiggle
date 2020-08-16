@@ -1,6 +1,5 @@
-package se.jbee.pixels;
+package se.jbee.wiggle;
 
-import java.awt.*;
 import java.util.Arrays;
 
 import static java.util.Arrays.asList;

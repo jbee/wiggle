@@ -1,11 +1,11 @@
-package se.jbee.pixels;
+package se.jbee.wiggle;
 
 import java.awt.*;
 
-import static se.jbee.pixels.Animation.*;
-import static se.jbee.pixels.Effect.becomes;
-import static se.jbee.pixels.Effect.pollutes;
-import static se.jbee.pixels.MaterialGroup.*;
+import static se.jbee.wiggle.Animation.*;
+import static se.jbee.wiggle.Effect.becomes;
+import static se.jbee.wiggle.Effect.pollutes;
+import static se.jbee.wiggle.MaterialGroup.*;
 
 /**
  * A set of {@link Substance} that defines all {@link Substance}s used in a {@link World}.

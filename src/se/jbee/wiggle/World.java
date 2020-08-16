@@ -1,4 +1,4 @@
-package se.jbee.pixels;
+package se.jbee.wiggle;
 
 public final class World {
 
