@@ -1,4 +1,4 @@
-package se.jbee.wiggle;
+package se.jbee.wiggle.engine;
 
 public final class World {
 
@@ -16,7 +16,7 @@ public final class World {
 
     private int loopCount;
 
-    World(int width, int height, Substances substances, Substance edge) {
+    public World(int width, int height, Substances substances, Substance edge) {
         this.width = width;
         this.height = height;
         this.substances = substances;

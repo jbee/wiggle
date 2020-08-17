@@ -1,4 +1,4 @@
-package se.jbee.wiggle;
+package se.jbee.wiggle.engine;
 
 public enum Momentum {
 

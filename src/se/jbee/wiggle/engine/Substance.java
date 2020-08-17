@@ -1,6 +1,4 @@
-package se.jbee.wiggle;
-
-import java.util.Arrays;
+package se.jbee.wiggle.engine;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOf;

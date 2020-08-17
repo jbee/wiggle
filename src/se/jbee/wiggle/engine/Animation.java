@@ -1,4 +1,4 @@
-package se.jbee.wiggle;
+package se.jbee.wiggle.engine;
 
 import java.awt.*;
 
@@ -6,26 +6,26 @@ public interface Animation {
 
     int rgba(int x, int y, World world, long frame);
 
-    static Animation fill(Color c) {
+    public static Animation fill(Color c) {
         int rgb = c.getRGB();
         return (x,y, world, frame) -> rgb;
     }
 
-    static Animation pattern(Color...cs) {
+    public static Animation pattern(Color...cs) {
         if (cs.length == 1)
             return fill(cs[0]);
         final int[] rgbs = rgbs(cs);
         return (x, y, world, frame) -> rgbs[x % rgbs.length];
     }
 
-    static Animation sequence(int speed, Color...cs) {
+    public static Animation sequence(int speed, Color...cs) {
         if (cs.length == 1)
             return fill(cs[0]);
         final int[] rgbs = rgbs(cs);
         return (x,y, world, frame) -> rgbs[(int) ((frame / speed) % rgbs.length)];
     }
 
-    static Animation blink(int speed, int baseOccurrence, Color base, int highlightOccurrence, Color highlight) {
+    public static Animation blink(int speed, int baseOccurrence, Color base, int highlightOccurrence, Color highlight) {
         return (x, y, world, frame) -> {
             int test = (int) (x+y+frame % 100);
             return world.rng.nextInt(0, baseOccurrence+highlightOccurrence) < highlightOccurrence
@@ -34,7 +34,7 @@ public interface Animation {
         };
     }
 
-    static Animation shuffle(int speed, Color...cs) {
+    public static Animation shuffle(int speed, Color...cs) {
         if (cs.length == 1)
             return fill(cs[0]);
         final int[] rgbs = rgbs(cs);

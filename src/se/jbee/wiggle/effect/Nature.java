@@ -1,13 +1,15 @@
 package se.jbee.wiggle.effect;
 
-import se.jbee.wiggle.Effect;
-import se.jbee.wiggle.Momenta;
+import se.jbee.wiggle.engine.Effect;
+import se.jbee.wiggle.engine.Momenta;
+import se.jbee.wiggle.engine.Phase;
+import se.jbee.wiggle.engine.Substance;
 
 /**
- * Namespace for {@link Effect}s that simulate different {@link se.jbee.wiggle.Phase}s.
+ * Namespace for {@link Effect}s that simulate different {@link Phase}s.
  * This means how the material behaves generally in the "physical" world.
  *
- * This does not cover special effects that {@link se.jbee.wiggle.Substance}s might have.
+ * This does not cover special effects that {@link Substance}s might have.
  */
 public final class Nature {
 

@@ -1,5 +1,8 @@
 package se.jbee.wiggle;
 
+import se.jbee.wiggle.engine.*;
+import se.jbee.wiggle.game.WiggleWobble;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -27,7 +30,7 @@ public class Renderer {
     private static boolean showMomenta = false;
     private static boolean addParticles = false;
 
-    static int toolMaterialId = Substances.Water.substanceId;
+    static int toolMaterialId = WiggleWobble.Water.substanceId;
 
     public static void init() {
         getBestSize();
@@ -76,16 +79,16 @@ public class Renderer {
                     int size = 20;
                     for (int yi = 0; yi < size; yi++)
                         for (int xi = 0; xi < size; xi++)
-                            world.replaceAt(x + xi, y + yi, Substances.TEST.byId(toolMaterialId).variety(world.rng));
+                            world.replaceAt(x + xi, y + yi, WiggleWobble.SUBSTANCES.byId(toolMaterialId).variety(world.rng));
                 } else if (e.getButton() == MouseEvent.BUTTON3) {
-                    toolMaterialId = (toolMaterialId +1) % Substances.TEST.count();
+                    toolMaterialId = (toolMaterialId +1) % WiggleWobble.SUBSTANCES.count();
                     createAndSetCursor();
                 }
             }
         });
         frame.setVisible(true);
 
-        world = new World(gameWidth, gameHeight, Substances.TEST, Substances.HardRock);
+        world = new World(gameWidth, gameHeight, WiggleWobble.SUBSTANCES, WiggleWobble.HardRock);
 
         startRendering();
         startSimulation();
@@ -95,7 +98,7 @@ public class Renderer {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         int size = 20 * factor;
         BufferedImage cursor = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-        Variety variant = Substances.TEST.byId(toolMaterialId).variety(0);
+        Variety variant = WiggleWobble.SUBSTANCES.byId(toolMaterialId).variety(0);
         int rgb = variant.isAnimated() ? variant.animation.rgba(0,0, world, 1L) : Color.WHITE.getRGB();
         for (int y = 0; y < size; y++)
             cursor.setRGB(0,y, rgb);
@@ -146,19 +149,19 @@ public class Renderer {
     private static void randomPixelStream(RNG rng) {
         int frame = world.loopCount();
         if (frame % 2 == 0) {
-            world.replaceAt(world.width / 2, 0, Substances.Dirt.variety(rng));
-            world.replaceAt(world.width / 2 - 2, 0, Substances.Water.variety(rng));
+            world.replaceAt(world.width / 2, 0, WiggleWobble.Dirt.variety(rng));
+            world.replaceAt(world.width / 2 - 2, 0, WiggleWobble.Water.variety(rng));
         }
         if (frame % 4 == 0) {
-            world.replaceAt(world.width / 2 - 2, world.height - 20, Substances.Steam.variety(rng));
+            world.replaceAt(world.width / 2 - 2, world.height - 20, WiggleWobble.Steam.variety(rng));
         }
         if (frame % 2 == 0) {
-            world.replaceAt(world.width / 2 - 50, 0, Substances.Slime.variety(rng));
+            world.replaceAt(world.width / 2 - 50, 0, WiggleWobble.Slime.variety(rng));
         }
     }
 
     private static void putWalls(RNG rng) {
-        Substance wall = Substances.HardRock;
+        Substance wall = WiggleWobble.HardRock;
         for (int x = 0; x < world.width; x++)
             world.replaceAt(x, -10, wall); // draw bottom
 
@@ -181,12 +184,12 @@ public class Renderer {
 
         for (int y = 10; y < 80; y++)
             for (int x = 50; x < 100; x++)
-                world.replaceAt(x, y, Substances.Water.variety(rng));
+                world.replaceAt(x, y, WiggleWobble.Water.variety(rng));
 
         if (true)
             for (int i = 0; i < 30; i++) {
-                world.replaceAt(40 + i, 80 + i, Substances.HardRock);
-                world.replaceAt(40 + i, 81 + i, Substances.HardRock);
+                world.replaceAt(40 + i, 80 + i, WiggleWobble.HardRock);
+                world.replaceAt(40 + i, 81 + i, WiggleWobble.HardRock);
             }
     }
 
@@ -217,9 +220,11 @@ public class Renderer {
                         sumDuration = 0L;
                     }
 
-                    Graphics g2d = main.getGraphics();
+                    Graphics2D g2d = (Graphics2D) main.getGraphics();
                     g2d.setColor(Color.BLACK);
                     g2d.fillRect(0, 0, gameWidth, gameHeight);
+                   // g2d.setColor(Color.YELLOW);
+                    //g2d.fillRect(0, 0, gameWidth/2, gameHeight);
 
                     for (int y = 0; y < world.height; y++) {
                         for (int x = 0; x < world.width; x++) {
@@ -237,9 +242,9 @@ public class Renderer {
                                     if (m.isUp())
                                         rgb = Color.BLUE.getRGB();
                                 }
-                                if (material.substance() == Substances.Poison) {
-                                    if (x > 0 && world.substanceAt(x-1, y) != Substances.Poison
-                                            || x < world.width-1 && world.substanceAt(x+1,y) != Substances.Poison)
+                                if (material.substance() == WiggleWobble.Poison) {
+                                    if (x > 0 && world.substanceAt(x-1, y) != WiggleWobble.Poison
+                                            || x < world.width-1 && world.substanceAt(x+1,y) != WiggleWobble.Poison)
                                         rgb = new Color(rgb).brighter().brighter().getRGB();
                                 }
                                 main.setRGB(x, y, rgb);
@@ -249,13 +254,15 @@ public class Renderer {
 
                     g2d.dispose();
 
-                    g2d = canvas.getGraphics();
+                    g2d = (Graphics2D) canvas.getGraphics();
+
+                    //g2d.setComposite(AlphaComposite.Src);
 
                     g2d.drawImage(main, 0,0, canvasWidth, canvasHeight, null);
                     g2d.setColor(Color.RED);
                     g2d.drawString("FPS: "+ currentFPS  +" ("+(currentFPS >= TARGET_FPS ? "on point" : "degraded")+")", 10, 10);
                     g2d.drawString("SLPS:"+ currentSLPS +" ("+currentAvgSimDuration+"ms avg = "+(100*currentAvgSimDuration/TARGET_SIM_LOOP_DURATION)+"% CPU Time)", 10, 26);
-                    g2d.drawString("Tool: "+ Substances.TEST.byId(toolMaterialId).name, 10, 42);
+                    g2d.drawString("Tool: "+ WiggleWobble.SUBSTANCES.byId(toolMaterialId).name, 10, 42);
 
                     g2d.dispose();
 
