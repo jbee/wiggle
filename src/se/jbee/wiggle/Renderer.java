@@ -6,12 +6,13 @@ import se.jbee.wiggle.game.WiggleWobble;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 
 public class Renderer {
 
     private static final int GAME_WIDTH = 640, GAME_HEIGHT = 360;
     private static final int TARGET_FPS = 60;
-    private static final int TARGET_SLPS = 120;
+    private static final int TARGET_SLPS = 2 * TARGET_FPS;
     private static final long TARGET_FRAME_DURATION = 1000 / TARGET_FPS;
     private static final long TARGET_SIM_LOOP_DURATION = 1000 / TARGET_SLPS;
 
@@ -155,9 +156,6 @@ public class Renderer {
         if (frame % 4 == 0) {
             world.replaceAt(world.width / 2 - 2, world.height - 20, WiggleWobble.Steam.variety(rng));
         }
-        if (frame % 2 == 0) {
-            world.replaceAt(world.width / 2 - 50, 0, WiggleWobble.Slime.variety(rng));
-        }
     }
 
     private static void putWalls(RNG rng) {
@@ -199,38 +197,53 @@ public class Renderer {
             public void run() {
                 GraphicsConfiguration gc = canvas.getGraphicsConfiguration();
                 BufferedImage main = gc.createCompatibleImage(gameWidth, gameHeight, Transparency.TRANSLUCENT);
+                main.setAccelerationPriority(1.0f);
+                System.out.println(main.getColorModel().hasAlpha() ? "yes" : "no alpha");
+
+                final int[] screen = ((DataBufferInt) main.getRaster().getDataBuffer()).getData();
+                final int[] blackScreen = new int[screen.length];
+                for (int i = 0; i < blackScreen.length; i++)
+                    blackScreen[i] = Color.BLACK.getRGB();
+                final int screenWidth = main.getWidth();
+
                 long lastFpsTime = System.currentTimeMillis();
                 int frameCounter = 0;
                 int currentFPS = 0;
                 int currentSLPS = 0;
                 long currentAvgSimDuration = 0L;
+                long currentAvgDrawDuration = 0L;
+                long drawDuration = 0L;
                 boolean draw = true;
                 long frame = 0;
                 while (draw) {
                     frameCounter ++;
                     frame++;
-                    long now = System.currentTimeMillis();
-                    if (now > lastFpsTime + 1000) {
+                    if (frame < 0)
+                        frame = 0;
+                    long beforeDraw = System.currentTimeMillis();
+                    if (beforeDraw > lastFpsTime + 1000) {
                         lastFpsTime += 1000;
                         currentFPS = frameCounter;
+                        currentAvgDrawDuration = currentFPS == 0 ? 0L : drawDuration / currentFPS;
                         currentSLPS = simCounter;
                         currentAvgSimDuration = currentSLPS == 0 ? 0L : sumDuration / currentSLPS;
                         frameCounter = 0;
                         simCounter = 0;
                         sumDuration = 0L;
+                        drawDuration = 0L;
                     }
 
                     Graphics2D g2d = (Graphics2D) main.getGraphics();
-                    g2d.setColor(Color.BLACK);
-                    g2d.fillRect(0, 0, gameWidth, gameHeight);
-                   // g2d.setColor(Color.YELLOW);
-                    //g2d.fillRect(0, 0, gameWidth/2, gameHeight);
+                    //g2d.setComposite(AlphaComposite.SrcOver);
+                    //g2d.setColor(Color.BLACK);
+                    //g2d.fillRect(0, 0, gameWidth, gameHeight);
+                    System.arraycopy(blackScreen, 0, screen, 0, screen.length);
 
                     for (int y = 0; y < world.height; y++) {
                         for (int x = 0; x < world.width; x++) {
-                            Variety material = world.varietyAt(x, y);
-                            if (material.isAnimated()) {
-                                int rgb = material.animation.rgba(x,y, world, frame);
+                            Variety variety = world.varietyAt(x, y);
+                            if (variety.isAnimated()) {
+                                int rgb = variety.animation.rgba(x,y, world, frame);
                                 if (showMomenta) {
                                     Momenta m = world.momentaAt(x,y);
                                     if (m.isLeft())
@@ -242,12 +255,13 @@ public class Renderer {
                                     if (m.isUp())
                                         rgb = Color.BLUE.getRGB();
                                 }
-                                if (material.substance() == WiggleWobble.Poison) {
+                                if (variety.substance() == WiggleWobble.Poison) {
                                     if (x > 0 && world.substanceAt(x-1, y) != WiggleWobble.Poison
                                             || x < world.width-1 && world.substanceAt(x+1,y) != WiggleWobble.Poison)
                                         rgb = new Color(rgb).brighter().brighter().getRGB();
                                 }
-                                main.setRGB(x, y, rgb);
+                                int i = y * screenWidth + x;
+                                screen[i] = RGBA.blend(rgb, screen[i]);
                             }
                         }
                     }
@@ -255,18 +269,17 @@ public class Renderer {
                     g2d.dispose();
 
                     g2d = (Graphics2D) canvas.getGraphics();
-
-                    //g2d.setComposite(AlphaComposite.Src);
-
                     g2d.drawImage(main, 0,0, canvasWidth, canvasHeight, null);
                     g2d.setColor(Color.RED);
-                    g2d.drawString("FPS: "+ currentFPS  +" ("+(currentFPS >= TARGET_FPS ? "on point" : "degraded")+")", 10, 10);
+                    g2d.drawString("FPS: "+ currentFPS  +" ("+currentAvgDrawDuration+"ms avg = "+(100*currentAvgDrawDuration/TARGET_FRAME_DURATION)+"% CPU Time)", 10, 10);
                     g2d.drawString("SLPS:"+ currentSLPS +" ("+currentAvgSimDuration+"ms avg = "+(100*currentAvgSimDuration/TARGET_SIM_LOOP_DURATION)+"% CPU Time)", 10, 26);
                     g2d.drawString("Tool: "+ WiggleWobble.SUBSTANCES.byId(toolMaterialId).name, 10, 42);
 
                     g2d.dispose();
 
-                    long left = TARGET_FRAME_DURATION - (System.currentTimeMillis() - now);
+                    drawDuration += System.currentTimeMillis() - beforeDraw;
+
+                    long left = TARGET_FRAME_DURATION - (System.currentTimeMillis() - beforeDraw);
                     if (left > 0) {
                         try {
                             Thread.sleep(left);

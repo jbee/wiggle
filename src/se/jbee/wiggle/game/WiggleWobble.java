@@ -28,9 +28,12 @@ public interface WiggleWobble {
             .addVariety("water", fill(new Color(184, 227, 232)));
 
     Substance Water = new Substance(SUBSTANCES,"Water", FLUID, Nature.FLUID, 100)
-            .addVariety("sweet", fill(new Color(9, 125, 156, 174)));
+            .addVariety("clear", fill(new Color(9, 125, 156, 174)))
+            ;
 
-    Substance Poison = new Substance(SUBSTANCES, "Poison", FLUID, Nature.FLUID.and(pollutes(other -> other == Water)), 100)
+    Substance Poison = new Substance(SUBSTANCES, "Poison", FLUID, Nature.FLUID.and(
+            pollutes(other -> other == Water)
+    ), 100)
             .addVariety("week", fill(new Color(184, 216, 22))); //, new Color(214, 254, 29)
 
     Effect Cleanse = (cleansium, x, y, world, dx) -> {
@@ -73,7 +76,7 @@ public interface WiggleWobble {
                     new Color(246, 194, 252)));
 
     // a pixel that caught fire never goes back
-    Substance Fire = new Substance(SUBSTANCES, "Fire", SOLID_CRYSTALLINE, Nature.SOLID_GRANULAR, 200)
+    Substance Fire = new Substance(SUBSTANCES, "Fire", SOLID, Nature.SOLID_GRANULAR, 200)
             .addVariety("a", Animation.sequence(19,
                     new Color(253, 249, 207),
                     new Color(254, 246, 96),
@@ -100,33 +103,30 @@ public interface WiggleWobble {
             ))
             ;
 
-    Substance Coal = new Substance(SUBSTANCES, "Coal", SOLID_GRANULAR, Nature.SOLID_GRANULAR, 400)
+    Substance Coal = new Substance(SUBSTANCES, "Coal", GRAINY, Nature.SOLID_GRANULAR, 400)
             .addVariety("a", fill(new Color(121, 96, 74)))
             .addVariety("c", fill(new Color(134, 111, 85)))
             .addVariety("b", fill(new Color(87, 68, 54)));
 
-    Substance Nitre = new Substance(SUBSTANCES, "Nitre", SOLID_GRANULAR, Nature.SOLID_GRANULAR, 200)
+    Substance Nitre = new Substance(SUBSTANCES, "Nitre", GRAINY, Nature.SOLID_GRANULAR, 200)
             .addVariety("a", 2, fill(new Color(245, 120, 82)))
             .addVariety("b", fill(new Color(154, 76, 82)))
             .addVariety("c", fill(new Color(253, 160, 113)));
 
-    Substance LimeStone = new Substance(SUBSTANCES, "Lime Stone", SOLID_CRYSTALLINE, Nature.SOLID, 800)
+    Substance LimeStone = new Substance(SUBSTANCES, "Lime Stone", SOLID, Nature.SOLID, 800)
             .addVariety("a", pattern(new Color(167, 166, 171, 255), new Color(198, 203, 209, 255)));
 
-    Substance Dirt = new Substance(SUBSTANCES,"Dirt", SOLID_GRANULAR, Nature.SOLID_GRANULAR, 600)
+    Substance Dirt = new Substance(SUBSTANCES,"Dirt", GRAINY, Nature.SOLID_GRANULAR, 600)
             .addVariety("chocolate", fill(new Color(213, 151, 75)))
             .addVariety("khaki", fill(new Color(221, 180, 128)))
             .addVariety("light", fill(new Color(255, 237, 206)))
             .addVariety("dust", fill(new Color(197, 175, 125)));
 
-    Substance Slime = new Substance(SUBSTANCES,"Soylent Green", GOOEY, Nature.GOO, 130)
-            .addVariety("itchy", fill(new Color(178, 226, 3)))
-            .addVariety("bitchy", fill(new Color(129, 229, 94)));
-
     Substance Oil = new Substance(SUBSTANCES,"Oil", FLUID, Nature.FLUID, 40)
             .addVariety("sticky", fill(new Color(194, 76, 36)));
 
-    Substance HardRock = new Substance(SUBSTANCES,"Hard Rock", SOLID_CRYSTALLINE, null, 1000)
+    Substance HardRock = new Substance(SUBSTANCES,"Hard Rock", SOLID, null, 1000)
             .addVariety("dense",fill(new Color(139, 94, 96)));
 
+    //IDEA: coal to diamonds
 }

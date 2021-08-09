@@ -13,8 +13,10 @@ public final class Substance {
     public final int density;
     private final Variety[] varieties;
     private final int totalOccurrence;
-    // whenIgnited => Effect for what happens when ignited, having an Effect also means it is combustible
-    // whenExploding => Effect for what happens when exploding
+
+    // inflame => Effect for what happens when igniting or otherwise getting in contact with fire,
+    //            having an Effect means the material has some interaction with fire or igniting substances,
+    //            e.g. Water extinguishes fire, whereas wood or coal ignites, nitre explodes...
 
     // TODO "life-time" or change of behaviour after certain time can be done as part of the simulation based on chance.
     //  This means no state has to be kept to track if it is time for the change. it just happens on time on average.
@@ -24,7 +26,7 @@ public final class Substance {
     //     also some fluids might mix very slow due to similar density
 
     public Substance(Substances substances, String name, Phase phase, Effect effect, int density) {
-        this(substances, substances.nextId(), name, phase, effect, density);
+        this(substances, substances.nextSubstanceId(), name, phase, effect, density);
     }
 
     private Substance(Substances substances, int substanceId, String name, Phase phase, Effect effect, int density, Variety... varieties) {
